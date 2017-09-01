@@ -1,0 +1,23 @@
+name: "jboss-datagrid-services/caching-service"
+description: "Red Hat JBoss Data Grid Caching Service"
+version: "1.0"
+from: "jboss-datagrid-7/datagrid71-openshift:latest"
+user: 185
+labels:
+    - name: "io.k8s.description"
+      value: "Provides a scalable in-memory caching solution for fast access to large volumes of data."
+    - name: "io.k8s.display-name"
+      value: "JBoss Data Grid Caching Service"
+    - name: "io.openshift.tags"
+      value: "datagrid,java,jboss,xpaas"
+ports:
+    - value: 11222
+cmd:
+    - "/opt/datagrid/bin/jdg-caching-service.sh"
+dogen:
+    name: cfg
+    version: dogen-ng
+modules:
+    - name: dynamic-resources
+    - name: os-jdg-caching-service-launch
+    - name: os-jdg-caching-service-configuration

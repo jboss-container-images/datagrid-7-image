@@ -29,7 +29,7 @@ public class ConfigurationScriptInvoker {
    }
 
    public Result invokeScript(Path cli, String profile) {
-      Path script = Paths.get(".", "src/main/bash/jdg-online-configuration");
+      Path script = Paths.get(".", "src/main/bash/jdg-online-configuration.sh");
       Path profiles = Paths.get(".", "src/main/bash/profiles");
       if (!Files.exists(script)) {
          throw new IllegalStateException("The script file does not exist");

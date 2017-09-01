@@ -1,0 +1,3 @@
+name: os-jdg-caching-service-configuration
+execute:
+  - execute: install.sh

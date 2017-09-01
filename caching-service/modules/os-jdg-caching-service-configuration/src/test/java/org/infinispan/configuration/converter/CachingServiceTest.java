@@ -38,5 +38,7 @@ public class CachingServiceTest {
       XmlAssertion.assertThat(cloudXml).hasNoXPath("//*[local-name()='memcached-connector']");
       XmlAssertion.assertThat(cloudXml).hasNoXPath("//*[local-name()='rest-connector']");
       XmlAssertion.assertThat(cloudXml).hasXPath("//*[local-name()='hotrod-connector']");
+
+      XmlAssertion.assertThat(cloudXml).hasXPath("//*[local-name()='stack' and @name='kubernetes']");
    }
 }
