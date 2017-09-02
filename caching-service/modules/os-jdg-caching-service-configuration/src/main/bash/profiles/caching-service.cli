@@ -1,4 +1,4 @@
-embed-server --server-config=cloud.xml
+embed-server --server-config=cloud.xml --std-out=echo
 
 if (outcome == success) of /subsystem=datagrid-infinispan-endpoint/rest-connector=rest-connector:read-resource
    /subsystem=datagrid-infinispan-endpoint/rest-connector=rest-connector:remove
@@ -9,7 +9,8 @@ if (outcome == success) of /subsystem=datagrid-infinispan-endpoint/memcached-con
 end-if
 
 if (outcome != success) of /subsystem=datagrid-jgroups/stack=kubernetes:read-resource
-   /subsystem=datagrid-jgroups/stack=kubernetes:add(transport={type=TCP, socket-binding=jgroups-tcp}, protocols=[{type=openshift.KUBE_PING, socket-binding=jgroups-mping},{type=MERGE3},{type=FD_SOCK,socket-binding=jgroups-tcp-fd},{type=FD_ALL},{type=VERIFY_SUSPECT},{type=pbcast.NAKACK2},{type=UNICAST3},{type=pbcast.STABLE},{type=pbcast.GMS},{type=MFC},{type=FRAG2}])
+   /subsystem=datagrid-jgroups/stack=kubernetes:add(transport={type=TCP, socket-binding=jgroups-tcp}, protocols=[{type=openshift.KUBE_PING, socket-binding=jgroups-mping},{type=MERGE3},{type=FD_SOCK,socket-binding=jgroups-tcp-fd},{type=FD_ALL},{type=VERIFY_SUSPECT},{type=pbcast.NAKACK2},{type=UNICAST3},{type=pbcast.STABLE},{type=pbcast.GMS},{type=MFC},{type=FRAG3}])
+   /subsystem=datagrid-jgroups/stack=kubernetes/protocol=pbcast.NAKACK2/property=use_mcast_xmit:add(value=false)
 end-if
 
 stop-embedded-server

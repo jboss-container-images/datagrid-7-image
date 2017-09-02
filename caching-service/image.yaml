@@ -1,4 +1,4 @@
-name: "jboss-datagrid-services/caching-service"
+name: "slaskawi/caching-service"
 description: "Red Hat JBoss Data Grid Caching Service"
 version: "1.0"
 from: "jboss-datagrid-7/datagrid71-openshift:latest"
@@ -21,3 +21,4 @@ modules:
     - name: dynamic-resources
     - name: os-jdg-caching-service-launch
     - name: os-jdg-caching-service-configuration
+    - name: os-jdg-caching-service-probes
