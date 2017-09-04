@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<arquillian xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xmlns="http://jboss.org/schema/arquillian"
+            xsi:schemaLocation="http://jboss.org/schema/arquillian http://jboss.org/schema/arquillian/arquillian_1_0.xsd">
+
+
+   <extension qualifier="openshift">
+      <!--
+         Just comment those two lines to run it efficiently while debugging. Just create those resources once
+         and restart test only
+      -->
+      <property name="env.setup.script.url">setup.sh</property>
+      <property name="env.teardown.script.url">destroy.sh</property>
+      <property name="namespace.use.current">true</property>
+      <property name="wait.for.service.list">infinispan-app-hotrod</property>
+   </extension>
+
+</arquillian>

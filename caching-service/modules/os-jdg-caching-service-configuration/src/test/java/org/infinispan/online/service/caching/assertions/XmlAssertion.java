@@ -1,4 +1,4 @@
-package org.infinispan.configuration.converter.assertions;
+package org.infinispan.online.service.caching.assertions;
 
 import java.nio.file.Path;
 

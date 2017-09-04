@@ -1,15 +1,15 @@
-package org.infinispan.configuration.converter;
+package org.infinispan.online.service.caching;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
-import org.infinispan.configuration.converter.util.ConfigurationScriptInvoker;
-import org.infinispan.configuration.converter.util.TestResourceLocator;
-import org.infinispan.configuration.converter.util.TestServerLocator;
-import org.infinispan.configuration.converter.assertions.ResultAssertion;
-import org.infinispan.configuration.converter.assertions.XmlAssertion;
+import org.infinispan.online.service.caching.assertions.ResultAssertion;
+import org.infinispan.online.service.caching.assertions.XmlAssertion;
+import org.infinispan.online.service.caching.util.ConfigurationScriptInvoker;
+import org.infinispan.online.service.caching.util.TestResourceLocator;
+import org.infinispan.online.service.caching.util.TestServerLocator;
 import org.junit.Before;
 import org.junit.Test;
 

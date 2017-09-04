@@ -15,11 +15,6 @@ build-image:
 	condev generate -b
 .PHONY: build-image
 
-push-image-to-local-openshift:
-	docker tag slaskawi/caching-service:1.0 docker-registry-default.127.0.0.1.nip.io/slaskawi/caching-service:1.0
-	docker push docker-registry-default.127.0.0.1.nip.io/slaskawi/caching-service:1.0
-.PHONY: push-image-to-local-openshift
-
 install-templates:
 	oc create -f templates/caching-service.json || true
 .PHONY: install-templates
@@ -32,3 +27,9 @@ clear-templates:
 test-caching-service:
 	oc process jdg-caching-service -p NAMESPACE=$(shell oc project -q) | oc create -f -
 .PHONY: test-caching-service
+
+test:
+	mvn clean test -f modules/os-jdg-caching-service-configuration/pom.xml
+	oc cluster up
+	mvn clean test -f functional-tests/pom.xml || (ret=$$?; oc cluster down && exit $$ret)
+.PHONY: test

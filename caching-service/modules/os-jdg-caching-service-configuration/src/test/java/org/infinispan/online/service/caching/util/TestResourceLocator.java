@@ -1,4 +1,4 @@
-package org.infinispan.configuration.converter.util;
+package org.infinispan.online.service.caching.util;
 
 import java.net.URISyntaxException;
 import java.net.URL;
