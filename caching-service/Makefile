@@ -1,6 +1,7 @@
 DEV_IMAGE_NAME = caching-service-dev
 DEV_IMAGE_ORG = jboss-datagrid-services
 DEV_IMAGE_FULL_NAME = $(DEV_IMAGE_ORG)/$(DEV_IMAGE_NAME)
+MVN_COMMAND = mvn
 
 _TEST_PROJECT = myproject
 _REGISTRY_IP = $(shell oc get svc/docker-registry -n default -o yaml | grep 'clusterIP:' | awk '{print $$2}')
@@ -37,11 +38,11 @@ push-image-to-local-openshift:
 .PHONY: push-image-to-local-openshift
 
 test-functional:
-	mvn clean test -f functional-tests/pom.xml -Dimage=$(_IMAGE)
+	$(MVN_COMMAND) clean test -f functional-tests/pom.xml -Dimage=$(_IMAGE)
 .PHONY: test-functional
 
 test-unit:
-	mvn clean test -f modules/os-jdg-caching-service-configuration/pom.xml
+	$(MVN_COMMAND) clean test -f modules/os-jdg-caching-service-configuration/pom.xml
 .PHONY: test-functional
 
 install-templates:
@@ -58,8 +59,8 @@ test-caching-service-manually:
 .PHONY: test-caching-service-manually
 
 clean-maven:
-	mvn clean -f modules/os-jdg-caching-service-configuration/pom.xml || true
-	mvn clean -f functional-tests/pom.xml || true
+	$(MVN_COMMAND) clean -f modules/os-jdg-caching-service-configuration/pom.xml || true
+	$(MVN_COMMAND) clean -f functional-tests/pom.xml || true
 .PHONY: clean-maven
 
 clean-docker:
