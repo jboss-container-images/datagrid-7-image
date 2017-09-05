@@ -14,11 +14,9 @@ ports:
     - value: 11222
 cmd:
     - "/opt/datagrid/bin/jdg-caching-service.sh"
-dogen:
-    name: cfg
-    version: dogen-ng
 modules:
     - name: dynamic-resources
     - name: os-jdg-caching-service-launch
     - name: os-jdg-caching-service-configuration
     - name: os-jdg-caching-service-probes
+schema_version: 1
