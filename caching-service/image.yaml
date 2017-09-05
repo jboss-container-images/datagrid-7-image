@@ -1,7 +1,7 @@
 name: "jboss-datagrid-services/caching-service"
 description: "Red Hat JBoss Data Grid Caching Service"
 version: "1.0"
-from: "jboss-datagrid-7/datagrid71-openshift:latest"
+from: "jboss-datagrid-7/datagrid71-openshift:1.0"
 user: 185
 labels:
     - name: "io.k8s.description"
