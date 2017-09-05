@@ -13,6 +13,7 @@
       <property name="env.teardown.script.url">destroy.sh</property>
       <property name="namespace.use.current">true</property>
       <property name="wait.for.service.list">infinispan-app-hotrod</property>
+      <property name="env.script.env">image=${image}</property>
    </extension>
 
 </arquillian>
