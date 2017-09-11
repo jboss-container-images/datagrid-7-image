@@ -1,0 +1,58 @@
+Red Hat JBoss Data Grid Caching Service
+=======================================
+
+Caching Service is the simplest for of Red Hat JBoss Online Services. It exposes https://www.redhat.com/en/technologies/jboss-middleware/data-grid[JBoss Data Grid] in the simplest possible forms - a single non-persisted cache with best effort Rolling Updates which is accessible via REST and Hot Rod Protocol.
+
+What's inside?
+--------------
+
+This repository has the following structure:
+
+```
++- Root
+    +-- caching-service - This service
+               +-- image.yaml - Image build recipe
+               +-- Makefile - A set of useful scripts for development work
+               +-- templates - OpenShift templates for this service
+               +-- modules - Modules used for the image
+               +-- functional-tests - Full end-to-end tests with Arquillian Cube
+```
+
+The `image.yaml` uses Python framework called http://concreate.readthedocs.io/en/develop/[Concreate] to build an image. The easiest way to start the build is to invoke `concreate image.yaml target` and invoke a standard Docker build from `target` directory.
+
+The `Makefile` contains lots of small, useful scripts. In order to perform a full end-to-end test, invoke `make test-ci`. This will spin up a local OpenShift cluster, build the image, install the template, invoke end-to-end tests and kill the cluster.
+
+The `templates` directory contains a template for Service Catalog. The easiest way to install it is to use `make install-templates-in-openshift-namespace`.
+
+The `modules` directory contains modules used in `image.yaml`. See http://concreate.readthedocs.io/en/develop/[Concreate] documentation for more details.
+
+The `functional-tests` directory contains http://arquillian.org/arquillian-cube/[Arquillian Cube tests]. The tests assume that there's a running OpenShift cluster and `oc` or `kubectl` is already attached to it.
+
+How can I play with it?
+-----------------------
+
+At first you will need a working OpenShift cluster as well as `oc` client in your `$PATH`. See https://openshift.io/[OpenShift documentation] how to achieve this.
+
+The next step is to install the templates. Feel free to use our `Makefile` or manually invoke `oc create -f templates/caching-service.json -n openshift`. After this step you should see the new service in OpenShift UI.
+
+Depending on your OpenShift version and whether the Service Catalog is turned on or off, you need to spin up a new Caching Service instance in your Project.
+
+Once it's done, just use a Hot Rod client (or REST) to connect to it. Below is an example:
+
+```
+Configuration cachingServiceClientConfiguration = new ConfigurationBuilder()
+   .addServer()
+      .host("infinispan-app-hotrod") // This service is created by the template
+      .port(11222) // Standard Hot Rod port
+   .build();
+
+RemoteCacheManager cachingService = new RemoteCacheManager(cachingServiceClientConfiguration);
+RemoteCache<String, String> defaultCache = cachingService.getCache();
+
+defaultCache.put("test", "test"); // Start playing with the Cache
+```
+
+What's next?
+------------
+
+If you're interested in our plans, visit our https://issues.jboss.org/secure/RapidBoard.jspa?rapidView=4167[JIRA board].
