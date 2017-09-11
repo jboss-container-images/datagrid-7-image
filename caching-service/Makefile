@@ -49,6 +49,10 @@ install-templates:
 	oc create -f templates/caching-service.json || true
 .PHONY: install-templates
 
+install-templates-in-openshift-namespace:
+	oc create -f templates/caching-service.json -n openshift || true
+.PHONY: install-templates-in-openshift-namespace
+
 clear-templates:
 	oc delete all,secrets,sa,templates,configmaps,daemonsets,clusterroles,rolebindings,serviceaccounts --selector=template=jdg-caching-service || true
 	oc delete template jdg-caching-service || true
