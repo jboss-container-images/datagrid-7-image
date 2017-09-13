@@ -20,19 +20,21 @@ public class XmlAssertion extends AbstractAssert<XmlAssertion, Source> {
       return new XmlAssertion(Input.fromFile(xmlFile.toFile()).build());
    }
 
-   public void hasXPath(String xpath) {
+   public XmlAssertion hasXPath(String xpath) {
       XPathEngine xpathEngine = new JAXPXPathEngine();
       Iterable<Node> nodes = xpathEngine.selectNodes(xpath, actual);
       if (!nodes.iterator().hasNext()) {
          failWithMessage("XPath %s is not present in the XML file (but should be)", xpath);
       }
+      return this;
    }
 
-   public void hasNoXPath(String xpath) {
+   public XmlAssertion hasNoXPath(String xpath) {
       XPathEngine xpathEngine = new JAXPXPathEngine();
       Iterable<Node> nodes = xpathEngine.selectNodes(xpath, actual);
       if (nodes.iterator().hasNext()) {
          failWithMessage("XPath %s is present in the XML file (but should be)", xpath);
       }
+      return this;
    }
 }
