@@ -7,42 +7,57 @@
    <artifactId>caching-service-test</artifactId>
    <version>1.0.0-SNAPSHOT</version>
 
+   <properties>
+      <infinispan-client-hotrod.version>8.4.0.Final-redhat-2</infinispan-client-hotrod.version>
+      <openshift-client.version>2.6.1</openshift-client.version>
+      <arquillian-junit-standalone.version>1.1.13.Final</arquillian-junit-standalone.version>
+      <arquillian-cube-openshift.version>1.8.0</arquillian-cube-openshift.version>
+      <assertj-core.version>3.8.0</assertj-core.version>
+      <rest-assured.version>2.9.0</rest-assured.version>
+   </properties>
+
    <dependencies>
       <!-- https://github.com/arquillian/arquillian-cube/blob/master/docs/kubernetes.adoc#dealing-with-version-conflicts -->
       <dependency>
          <groupId>org.infinispan</groupId>
          <artifactId>infinispan-client-hotrod</artifactId>
-         <version>8.4.0.Final-redhat-2</version>
+         <version>${infinispan-client-hotrod.version}</version>
       </dependency>
 
       <dependency>
          <groupId>io.fabric8</groupId>
          <artifactId>openshift-client</artifactId>
-         <version>2.6.1</version>
+         <version>${openshift-client.version}</version>
          <scope>test</scope>
       </dependency>
       <dependency>
          <groupId>org.jboss.arquillian.junit</groupId>
          <artifactId>arquillian-junit-standalone</artifactId>
-         <version>1.1.13.Final</version>
+         <version>${arquillian-junit-standalone.version}</version>
          <scope>test</scope>
       </dependency>
       <dependency>
          <groupId>org.arquillian.cube</groupId>
          <artifactId>arquillian-cube-openshift</artifactId>
-         <version>1.8.0</version>
+         <version>${arquillian-cube-openshift.version}</version>
          <scope>test</scope>
       </dependency>
       <dependency>
          <groupId>org.arquillian.cube</groupId>
          <artifactId>arquillian-cube-requirement</artifactId>
-         <version>1.8.0</version>
+         <version>${arquillian-cube-openshift.version}</version>
          <scope>test</scope>
       </dependency>
       <dependency>
          <groupId>org.assertj</groupId>
          <artifactId>assertj-core</artifactId>
-         <version>3.8.0</version>
+         <version>${assertj-core.version}</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>com.jayway.restassured</groupId>
+         <artifactId>rest-assured</artifactId>
+         <version>${rest-assured.version}</version>
          <scope>test</scope>
       </dependency>
    </dependencies>

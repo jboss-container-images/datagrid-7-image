@@ -1,5 +1,6 @@
 package org.infinispan.online.service.caching;
 
+import static com.jayway.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
@@ -17,7 +18,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import io.fabric8.kubernetes.clnt.v2_5.KubernetesClient;
-import io.fabric8.openshift.clnt.v2_5.OpenShiftClient;
 
 @RunWith(ArquillianConditionalRunner.class)
 @RequiresOpenshift
@@ -25,27 +25,45 @@ public class CachingServiceTest {
 
    @Named("infinispan-app-hotrod")
    @ArquillianResource
-   URL service;
+   URL hotRodService;
+
+   @Named("infinispan-app-http")
+   @ArquillianResource
+   URL restService;
+
+   @Named("infinispan-app-memcached")
+   @ArquillianResource
+   URL memcachedService; //we just want to test injection here...
 
    @ArquillianResource
    KubernetesClient client;
 
    @Test
-   public void should_have_default_cache() throws IOException {
+   public void should_default_cache_be_accessible_via_hot_rod() throws IOException {
       //given
       Configuration cachingServiceClientConfiguration = new ConfigurationBuilder()
-      .addServer()
-      .host(service.getHost())
-      .port(service.getPort())
-      .build();
+        .addServer()
+        .host(hotRodService.getHost())
+        .port(hotRodService.getPort())
+        .build();
       RemoteCacheManager cachingService = new RemoteCacheManager(cachingServiceClientConfiguration);
       RemoteCache<String, String> defaultCache = cachingService.getCache();
 
       //when
-      defaultCache.put("test", "test");
-      String valueObtainedFromTheCache = defaultCache.get("test");
+      defaultCache.put("should_default_cache_be_accessible_via_hot_rod", "test");
+      String valueObtainedFromTheCache = defaultCache.get("should_default_cache_be_accessible_via_hot_rod");
 
       //then
       assertThat(valueObtainedFromTheCache).isEqualTo("test");
+   }
+
+   @Test
+   public void should_default_cache_be_accessible_via_REST() throws IOException {
+      given()
+        .body("test")
+     .when()
+        .post(restService.toString() + "rest/default/should_default_cache_be_accessible_via_REST")
+     .then()
+        .statusCode(200);
    }
 }
