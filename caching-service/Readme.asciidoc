@@ -1,7 +1,12 @@
-Red Hat JBoss Data Grid Caching Service
+Red Hat JBoss Data Grid Online Services
 =======================================
 
-Caching Service is the simplest for of Red Hat JBoss Online Services. It exposes https://www.redhat.com/en/technologies/jboss-middleware/data-grid[JBoss Data Grid] in the simplest possible forms - a single non-persisted cache with best effort Rolling Updates which is accessible via REST and Hot Rod Protocol.
+Red Hat JBoss Data Grid Online Services consists of a multiple services:
+
+- Caching Service - the simplest, default cache
+- Shared Memory Service - a persistent cache
+
+The services are based on https://www.redhat.com/en/technologies/jboss-middleware/data-grid[JBoss Data Grid] technology and they expose various endpoints and configurations depending on the use case.
 
 What's inside?
 --------------
