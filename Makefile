@@ -1,5 +1,5 @@
-DEV_IMAGE_NAME = online-services-dev
-DEV_IMAGE_ORG = jboss-datagrid-online-services
+DEV_IMAGE_NAME = datagrid-online-services-dev
+DEV_IMAGE_ORG = datagrid-online-services
 DEV_IMAGE_FULL_NAME = $(DEV_IMAGE_ORG)/$(DEV_IMAGE_NAME)
 MVN_COMMAND = mvn
 
@@ -42,7 +42,7 @@ test-functional:
 .PHONY: test-functional
 
 test-unit:
-	$(MVN_COMMAND) clean test -f modules/os-jdg-online-services-configuration/pom.xml
+	$(MVN_COMMAND) clean test -f modules/os-datagrid-online-services-configuration/pom.xml
 .PHONY: test-functional
 
 install-templates:
