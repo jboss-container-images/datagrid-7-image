@@ -1,3 +1,0 @@
-name: os-jdg-caching-service-probes
-execute:
-  - execute: install.sh

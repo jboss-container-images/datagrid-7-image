@@ -1,5 +1,5 @@
-DEV_IMAGE_NAME = caching-service-dev
-DEV_IMAGE_ORG = jboss-datagrid-services
+DEV_IMAGE_NAME = online-services-dev
+DEV_IMAGE_ORG = jboss-datagrid-online-services
 DEV_IMAGE_FULL_NAME = $(DEV_IMAGE_ORG)/$(DEV_IMAGE_NAME)
 MVN_COMMAND = mvn
 
@@ -23,7 +23,7 @@ stop-openshift:
 .PHONY: stop-openshift
 
 build-image:
-	concreate image.yaml target
+	concreate generate
 	sudo docker build --force-rm -t $(DEV_IMAGE_FULL_NAME) ./target/image
 .PHONY: build-image
 
@@ -42,7 +42,7 @@ test-functional:
 .PHONY: test-functional
 
 test-unit:
-	$(MVN_COMMAND) clean test -f modules/os-jdg-caching-service-configuration/pom.xml
+	$(MVN_COMMAND) clean test -f modules/os-jdg-online-services-configuration/pom.xml
 .PHONY: test-functional
 
 install-templates:
