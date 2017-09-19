@@ -1,4 +1,4 @@
 schema_version: 1
-name: os-jdg-online-services-probes
+name: os-datagrid-online-services-configuration
 execute:
   - script: install.sh

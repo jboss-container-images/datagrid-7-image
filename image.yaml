@@ -18,12 +18,10 @@ ports:
 run:
     user: 185
     cmd:
-        - "/opt/datagrid/bin/jdg-online-services.sh"
+        - "/opt/datagrid/bin/datagrid-online-services.sh"
 modules:
-    repositories:
-        - path: modules
     install:
         - name: dynamic-resources
-        - name: os-jdg-online-services-launch
-        - name: os-jdg-online-services-configuration
-        - name: os-jdg-online-services-probes
+        - name: os-datagrid-online-services-launch
+        - name: os-datagrid-online-services-configuration
+        - name: os-datagrid-online-services-probes
