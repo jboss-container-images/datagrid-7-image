@@ -1,5 +1,5 @@
 schema_version: 1
-name: "jboss-dataservices/jdg-online-services"
+name: "jboss-dataservices/datagrid-online-services"
 description: "Red Hat JBoss Data Grid Services"
 version: "1.0"
 from: "jboss-datagrid-7/datagrid71-openshift:1.0"
