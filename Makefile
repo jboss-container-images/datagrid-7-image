@@ -23,7 +23,13 @@ stop-openshift:
 .PHONY: stop-openshift
 
 build-image:
-	concreate generate --target target-docker
+	( \
+		virtualenv ~/concreate; \
+		source ~/concreate/bin/activate; \
+		pip install -U concreate==1.0.0rc2; \
+		concreate generate --target target-docker; \
+		deactivate; \
+	)
 	sudo docker build --force-rm -t $(DEV_IMAGE_FULL_NAME) ./target-docker/image
 .PHONY: build-image
 
@@ -74,6 +80,6 @@ clean-docker:
 clean: clean-docker clean-maven stop-openshift
 .PHONY: clean
 
-test-ci: start-openshift-with-catalog build-image test-unit push-image-to-local-openshift test-functional clean
+test-ci: build-image test-unit start-openshift-with-catalog push-image-to-local-openshift test-functional clean
 .PHONY: test-ci
 
