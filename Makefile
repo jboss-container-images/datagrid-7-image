@@ -23,8 +23,8 @@ stop-openshift:
 .PHONY: stop-openshift
 
 build-image:
-	concreate generate
-	sudo docker build --force-rm -t $(DEV_IMAGE_FULL_NAME) ./target/image
+	concreate generate --target target-docker
+	sudo docker build --force-rm -t $(DEV_IMAGE_FULL_NAME) ./target-docker/image
 .PHONY: build-image
 
 push-image-to-local-openshift:

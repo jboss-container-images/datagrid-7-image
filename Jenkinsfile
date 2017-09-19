@@ -12,12 +12,10 @@ pipeline {
       stage('Unit tests') {
          steps {
             script {
-               dir ('caching-service') {
-                  configFileProvider([configFile(fileId: 'maven-settings-with-prod', variable: 'MAVEN_SETTINGS')]) {
-                     script {
-                        def mvnHome = tool 'Maven'
-                        sh 'make MVN_COMMAND="${mvnHome}/bin/mvn -s $MAVEN_SETTINGS" test-unit'
-                     }
+               configFileProvider([configFile(fileId: 'maven-settings-with-prod', variable: 'MAVEN_SETTINGS')]) {
+                  script {
+                     def mvnHome = tool 'Maven'
+                     sh 'make MVN_COMMAND="${mvnHome}/bin/mvn -s $MAVEN_SETTINGS" test-unit'
                   }
                }
             }
@@ -27,15 +25,13 @@ pipeline {
       stage('Functional and OpenShift tests') {
          steps {
             script {
-               dir ('caching-service') {
-                  configFileProvider([configFile(fileId: 'maven-settings-with-prod', variable: 'MAVEN_SETTINGS')]) {
-                     script {
-                        def mvnHome = tool 'Maven'
-                        try {
-                           sh 'make MVN_COMMAND="${mvnHome}/bin/mvn -s $MAVEN_SETTINGS" start-openshift-with-catalog build-image push-image-to-local-openshift test-functional'
-                        } finally {
-                           sh 'make MVN_COMMAND="${mvnHome}/bin/mvn -s $MAVEN_SETTINGS" stop-openshift clean-docker'
-                        }
+               configFileProvider([configFile(fileId: 'maven-settings-with-prod', variable: 'MAVEN_SETTINGS')]) {
+                  script {
+                     def mvnHome = tool 'Maven'
+                     try {
+                        sh 'make MVN_COMMAND="${mvnHome}/bin/mvn -s $MAVEN_SETTINGS" start-openshift-with-catalog build-image push-image-to-local-openshift test-functional'
+                     } finally {
+                        sh 'make MVN_COMMAND="${mvnHome}/bin/mvn -s $MAVEN_SETTINGS" stop-openshift clean-docker'
                      }
                   }
                }
@@ -46,9 +42,7 @@ pipeline {
       stage('Gather test results') {
          steps {
             script {
-               dir ('caching-service') {
-                  junit allowEmptyResults: true, testResults: '**/target/*-reports/*.xml'
-               }
+               junit allowEmptyResults: true, testResults: '**/target/*-reports/*.xml'
             }
          }
       }
