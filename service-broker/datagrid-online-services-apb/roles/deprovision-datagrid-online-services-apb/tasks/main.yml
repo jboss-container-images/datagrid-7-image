@@ -1,0 +1,35 @@
+- name: Delete Service Account
+  k8s_v1_service_account:
+    name: '{{ application_name }}'
+    namespace: '{{ namespace }}'
+    state: absent
+
+- name: Delete Role Binding
+  openshift_v1_role_binding:
+    namespace: '{{ namespace }}'
+    name: '{{ application_name }}'
+    state: absent
+
+- name: Delete Deployment Config
+  openshift_v1_deployment_config:
+    name: '{{ application_name }}'
+    namespace: '{{ namespace }}'
+    state: absent
+
+- name: Delete HTTP Service
+  k8s_v1_service:
+    name: '{{ application_name }}-http'
+    namespace: '{{ namespace }}'
+    state: absent
+
+- name: Delete Hot Rod Service
+  k8s_v1_service:
+    name: '{{ application_name }}-hotrod'
+    namespace: '{{ namespace }}'
+    state: absent
+
+- name: Delete Memcached Service
+  k8s_v1_service:
+    name: '{{ application_name }}-memcached'
+    namespace: '{{ namespace }}'
+    state: absent

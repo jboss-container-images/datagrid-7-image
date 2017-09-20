@@ -1,0 +1,37 @@
+_p: &_p
+  - name: application_name
+    default: caching-service
+    type: string
+    title: Application Name
+    required: true
+  - name: image
+    default: docker-registry.engineering.redhat.com/jboss-dataservices/dataservices72-caching-service
+    type: string
+    title: Image
+    required: true
+
+name: datagrid-online-services-apb
+image: jboss-dataservices/datagrid-online-services-apb
+description: Red Hat JBoss Data Grid Online Services
+bindable: True
+async: optional
+metadata:
+   documentationUrl: https://www.redhat.com/en/technologies/jboss-middleware/data-grid
+   longDescription: Red Hat JBoss Data Grid Online Services offer tailored experience of Caching for OpenShift users.
+   displayName: Red Hat JBoss Data Grid Online Services
+   console.openshift.io/iconClass: icon-infinispan
+plans:
+   - name: caching-service
+     description: The simplest way of exposing JBoss Data Grid Online Services offering only simple cache without any persistence guarantees.
+     free: True
+     metadata:
+       displayName: Caching Service
+       cost: $0.00
+     parameters: *_p
+   - name: shared-memory-service
+     description: Persistent JBoss Data Grid Online Service offering with persistent cache.
+     free: False
+     metadata:
+       displayName: Shared Memory Service
+       cost: $1.00 monthly
+     parameters: *_p

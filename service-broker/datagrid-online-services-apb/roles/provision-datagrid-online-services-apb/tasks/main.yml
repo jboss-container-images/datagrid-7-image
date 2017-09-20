@@ -1,0 +1,139 @@
+# Manual for those files: https://github.com/ansible/ansible-kubernetes-modules/tree/master/library
+# I also asked why they are not using the same API as K8s: https://github.com/ansible/ansible-kubernetes-modules/issues/7
+
+# This needs to be called twice: https://github.com/ansibleplaybookbundle/ansible-playbook-bundle/issues/118
+- name: Create Service Account
+  k8s_v1_service_account:
+    name: '{{ application_name }}'
+    namespace: '{{ namespace }}'
+
+# Blocked because of:
+# - https://github.com/ansibleplaybookbundle/ansible-playbook-bundle/issues/120
+# - https://github.com/ansibleplaybookbundle/ansible-playbook-bundle/issues/119
+#- name: Create Role Binding
+#  openshift_v1_role_binding:
+#    namespace: '{{ namespace }}'
+#    name: '{{ application_name }}'
+#    user_names:
+#      - system:serviceaccount:{{ namespace }}:{{ application_name }}
+#    role_ref_name: "view"
+#    subjects:
+#    - kind: ServiceAccount
+#      name: '{{ application_name }}'
+#      namespace: '{{ namespace }}'
+
+
+- name: Create Deployment Config
+  openshift_v1_deployment_config:
+    name: '{{ application_name }}'
+    namespace: '{{ namespace }}'
+    labels:
+      application: '{{ application_name }}'
+    replicas: 1
+    selector:
+      deploymentConfig: '{{ application_name }}'
+    strategy_type: Rolling
+    strategy_rolling_params:
+      intervalSeconds: 20
+      maxSurge: 1
+      maxUnavailable: 1
+      timeoutSeconds: 1200
+      updatePeriodSeconds: 20
+    spec_template_metadata_labels:
+      application: '{{ application_name }}'
+      deploymentConfig: '{{ application_name }}'
+    containers:
+    - name: '{{ application_name }}'
+      env:
+        - name: OPENSHIFT_KUBE_PING_LABELS
+          value: application={{ application_name }}
+        - name: OPENSHIFT_KUBE_PING_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        - name: KUBERNETES_LABELS
+          value: application={{ application_name }}
+        - name: KUBERNETES_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+      image: '{{ image }}'
+      ports:
+      - container_port: 8080
+        name: http
+        protocol: TCP
+      - container_port: 8888
+        name: ping
+        protocol: TCP
+      - container_port: 11222
+        name: hotrod
+        protocol: TCP
+      - container_port: 11211
+        name: memcached
+        protocol: TCP
+      resources:
+        requests:
+          cpu: 500m
+          memory: 512Mi
+      serviceAccount: '{{ application_name }}'
+      serviceAccountName: '{{ application_name }}'
+      liveness_probe:
+        _exec:
+          command:
+            - /opt/datagrid/bin/livenessProbe.sh
+        failure_threshold: 5
+        initial_delay_seconds: 5
+        period_seconds: 30
+        success_threshold: 1
+        timeout_seconds: 25
+      readiness_probe:
+        _exec:
+          command:
+            - /opt/datagrid/bin/readinessProbe.sh
+        failure_threshold: 5
+        initial_delay_seconds: 5
+        period_seconds: 30
+        success_threshold: 2
+        timeout_seconds: 25
+
+- name: Create HTTP Service
+  k8s_v1_service:
+    name: '{{ application_name }}-http'
+    namespace: '{{ namespace }}'
+    labels:
+      application: '{{ application_name }}'
+    selector:
+      application: '{{ application_name }}'
+    ports:
+      - name: http
+        port: 8080
+        target_port: 8080
+
+- name: Create Hot Rod Service
+  k8s_v1_service:
+    name: '{{ application_name }}-hotrod'
+    namespace: '{{ namespace }}'
+    labels:
+      application: '{{ application_name }}'
+    selector:
+      application: '{{ application_name }}'
+    ports:
+      - name: hotrod
+        port: 11222
+        target_port: 11222
+
+- name: Create Memcached Service
+  k8s_v1_service:
+    name: '{{ application_name }}-memcached'
+    namespace: '{{ namespace }}'
+    labels:
+      application: '{{ application_name }}'
+    selector:
+      application: '{{ application_name }}'
+    ports:
+      - name: memcached
+        port: 11211
+        target_port: 11211
+
