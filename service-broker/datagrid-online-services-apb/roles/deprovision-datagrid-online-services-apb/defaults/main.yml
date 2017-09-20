@@ -1,0 +1,4 @@
+---
+application_name: "caching-service"
+image: "docker-registry.engineering.redhat.com/jboss-dataservices/dataservices72-caching-service"
+state: present

@@ -17,3 +17,7 @@ indent_style = tab
 [*.java]
 continuation_indent_size = 0
 continuation_indent_size = 3
+
+[*.yaml]
+continuation_indent_size = 2
+continuation_indent_size = 2
