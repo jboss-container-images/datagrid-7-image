@@ -66,6 +66,12 @@ build-image:
 .PHONY: build-image
 
 _login_to_openshift:
+	( \
+		until oc get pod -n default | grep docker-registry | grep "1/1" > /dev/null; do \
+			sleep 10; \
+			echo "Waiting for Docker Registry..."; \
+		done; \
+	)
 	sudo docker login -u $(shell oc whoami) -p $(shell oc whoami -t) $(_REGISTRY_IP):5000
 .PHONY: _login_to_openshift
 
