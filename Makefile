@@ -94,22 +94,30 @@ test-unit:
 	$(MVN_COMMAND) clean test -f modules/os-datagrid-online-services-configuration/pom.xml
 .PHONY: test-functional
 
-install-templates:
-	oc create -f templates/caching-service.json || true
-.PHONY: install-templates
-
 install-templates-in-openshift-namespace:
 	oc create -f templates/caching-service.json -n openshift || true
+	oc create -f templates/shared-memory-service.json -n openshift || true
 .PHONY: install-templates-in-openshift-namespace
 
+install-templates:
+	oc create -f templates/caching-service.json || true
+	oc create -f templates/shared-memory-service.json || true
+.PHONY: install-templates
+
 clear-templates:
-	oc delete all,secrets,sa,templates,configmaps,daemonsets,clusterroles,rolebindings,serviceaccounts --selector=template=jdg-caching-service || true
-	oc delete template jdg-caching-service || true
+	oc delete all,secrets,sa,templates,configmaps,daemonsets,clusterroles,rolebindings,serviceaccounts --selector=template=caching-service || true
+	oc delete all,secrets,sa,templates,configmaps,daemonsets,clusterroles,rolebindings,serviceaccounts --selector=template=shared-memory-service || true
+	oc delete template caching-service || true
+	oc delete template shared-memory-service || true
 .PHONY: clear-templates
 
 test-caching-service-manually:
-	oc process jdg-caching-service -p NAMESPACE=$(shell oc project -q) | oc create -f -
+	oc process caching-service -p NAMESPACE=$(shell oc project -q) | oc create -f -
 .PHONY: test-caching-service-manually
+
+test-shared-memory-service-manually:
+	oc process shared-memory-service -p NAMESPACE=$(shell oc project -q) | oc create -f -
+.PHONY: test-shared-memory-service-manually
 
 clean-maven:
 	$(MVN_COMMAND) clean -f modules/os-jdg-caching-service-configuration/pom.xml || true

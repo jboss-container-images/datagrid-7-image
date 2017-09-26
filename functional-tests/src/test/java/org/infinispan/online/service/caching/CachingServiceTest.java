@@ -23,15 +23,15 @@ import io.fabric8.kubernetes.clnt.v2_5.KubernetesClient;
 @RequiresOpenshift
 public class CachingServiceTest {
 
-   @Named("infinispan-app-hotrod")
+   @Named("caching-service-app-hotrod")
    @ArquillianResource
    URL hotRodService;
 
-   @Named("infinispan-app-http")
+   @Named("caching-service-app-http")
    @ArquillianResource
    URL restService;
 
-   @Named("infinispan-app-memcached")
+   @Named("caching-service-app-memcached")
    @ArquillianResource
    URL memcachedService; //we just want to test injection here...
 
