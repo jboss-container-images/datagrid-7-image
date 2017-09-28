@@ -9,8 +9,8 @@ MVN_COMMAND = mvn
 APB_COMMAND = docker run --rm --privileged -v `pwd`:/mnt -v ${HOME}/.kube:/.kube -v /var/run/docker.sock:/var/run/docker.sock -u `id -u` docker.io/ansibleplaybookbundle/apb
 
 _TEST_PROJECT = myproject
-_REGISTRY_IP = $(shell oc get svc/docker-registry -n default -o yaml | grep 'clusterIP:' | awk '{print $$2}')
-_ANSIBLE_SERVICE_BROKER_IP = $(shell oc get svc/asb -n ansible-service-broker -o yaml | grep 'clusterIP:' | awk '{print $$2}')
+_REGISTRY_IP = $(shell oc get svc/docker-registry -n default -o yaml | grep 'clusterIP:' | awk '{print $2}')
+_ANSIBLE_SERVICE_BROKER_IP = $(shell oc get svc/asb -n ansible-service-broker -o yaml | grep 'clusterIP:' | awk '{print $2}')
 _IMAGE = $(_REGISTRY_IP):5000/$(_TEST_PROJECT)/$(DEV_IMAGE_NAME)
 _APB_IMAGE = $(_REGISTRY_IP):5000/$(_TEST_PROJECT)/$(DEV_APB_IMAGE_NAME)
 
