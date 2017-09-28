@@ -10,12 +10,6 @@
     name: '{{ application_name }}'
     state: absent
 
-- name: Delete Deployment Config
-  openshift_v1_deployment_config:
-    name: '{{ application_name }}'
-    namespace: '{{ namespace }}'
-    state: absent
-
 - name: Delete HTTP Service
   k8s_v1_service:
     name: '{{ application_name }}-http'
@@ -33,3 +27,9 @@
     name: '{{ application_name }}-memcached'
     namespace: '{{ namespace }}'
     state: absent
+
+- include: caching-service.yml
+  when: _apb_plan_id == "caching-service"
+
+- include: shared-memory-service.yml
+  when: _apb_plan_id == "shared-memory-service"
