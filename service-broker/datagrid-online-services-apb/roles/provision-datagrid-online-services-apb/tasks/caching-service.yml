@@ -1,0 +1,74 @@
+- name: Create Deployment Config
+  openshift_v1_deployment_config:
+    name: '{{ application_name }}'
+    namespace: '{{ namespace }}'
+    labels:
+      application: '{{ application_name }}'
+    replicas: 1
+    selector:
+      deploymentConfig: '{{ application_name }}'
+    strategy_type: Rolling
+    strategy_rolling_params:
+      intervalSeconds: 20
+      maxSurge: 1
+      maxUnavailable: 1
+      timeoutSeconds: 1200
+      updatePeriodSeconds: 20
+    spec_template_metadata_labels:
+      application: '{{ application_name }}'
+      deploymentConfig: '{{ application_name }}'
+    containers:
+    - name: '{{ application_name }}'
+      env:
+        - name: OPENSHIFT_KUBE_PING_LABELS
+          value: application={{ application_name }}
+        - name: OPENSHIFT_KUBE_PING_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        - name: KUBERNETES_LABELS
+          value: application={{ application_name }}
+        - name: KUBERNETES_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+      image: '{{ image }}'
+      ports:
+      - container_port: 8080
+        name: http
+        protocol: TCP
+      - container_port: 8888
+        name: ping
+        protocol: TCP
+      - container_port: 11222
+        name: hotrod
+        protocol: TCP
+      - container_port: 11211
+        name: memcached
+        protocol: TCP
+      resources:
+        requests:
+          cpu: 500m
+          memory: 512Mi
+      serviceAccount: '{{ application_name }}'
+      serviceAccountName: '{{ application_name }}'
+      liveness_probe:
+        _exec:
+          command:
+            - /opt/datagrid/bin/livenessProbe.sh
+        failure_threshold: 5
+        initial_delay_seconds: 5
+        period_seconds: 30
+        success_threshold: 1
+        timeout_seconds: 25
+      readiness_probe:
+        _exec:
+          command:
+            - /opt/datagrid/bin/readinessProbe.sh
+        failure_threshold: 5
+        initial_delay_seconds: 5
+        period_seconds: 30
+        success_threshold: 2
+        timeout_seconds: 25

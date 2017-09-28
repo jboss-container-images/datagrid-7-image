@@ -1,0 +1,11 @@
+- name: Delete Stateful Set
+  k8s_v1beta1_stateful_set:
+    name: '{{ application_name }}'
+    namespace: '{{ namespace }}'
+    state: absent
+
+- name: Create Headless Service
+  k8s_v1_service:
+    name: '{{ application_name }}-headless'
+    namespace: '{{ namespace }}'
+    state: absent

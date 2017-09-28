@@ -1,0 +1,85 @@
+- name: Create Stateful Set
+  k8s_v1beta1_stateful_set:
+    name: '{{ application_name }}'
+    namespace: '{{ namespace }}'
+    labels:
+      application: '{{ application_name }}'
+    replicas: 1
+    spec_template_metadata_labels:
+      application: '{{ application_name }}'
+      statefulset: '{{ application_name }}'
+    spec_service_name: '{{ application_name }}-headless'
+    containers:
+    - name: '{{ application_name }}'
+      env:
+        - name: PROFILE
+          value: 'SHARED-MEMORY-SERVICE'
+        - name: OPENSHIFT_KUBE_PING_LABELS
+          value: application={{ application_name }}
+        - name: OPENSHIFT_KUBE_PING_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        - name: KUBERNETES_LABELS
+          value: application={{ application_name }}
+        - name: KUBERNETES_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+      image: '{{ image }}'
+      ports:
+      - container_port: 8080
+        name: http
+        protocol: TCP
+      - container_port: 8888
+        name: ping
+        protocol: TCP
+      - container_port: 11222
+        name: hotrod
+        protocol: TCP
+      - container_port: 11211
+        name: memcached
+        protocol: TCP
+      resources:
+        requests:
+          cpu: 500m
+          memory: 512Mi
+      serviceAccount: '{{ application_name }}'
+      serviceAccountName: '{{ application_name }}'
+      liveness_probe:
+        _exec:
+          command:
+            - /opt/datagrid/bin/livenessProbe.sh
+        failure_threshold: 5
+        initial_delay_seconds: 5
+        period_seconds: 30
+        success_threshold: 1
+        timeout_seconds: 25
+      readiness_probe:
+        _exec:
+          command:
+            - /opt/datagrid/bin/readinessProbe.sh
+        failure_threshold: 5
+        initial_delay_seconds: 5
+        period_seconds: 30
+        success_threshold: 2
+        timeout_seconds: 25
+
+- name: Create Headless Service
+  k8s_v1_service:
+    name: '{{ application_name }}-headless'
+    namespace: '{{ namespace }}'
+    labels:
+      application: '{{ application_name }}'
+    selector:
+      application: '{{ application_name }}'
+    ports:
+      - name: hotrod
+        port: 11222
+        target_port: 11222
+      - name: http
+        port: 8080
+        target_port: 8080
+    cluster_ip: 'None'
