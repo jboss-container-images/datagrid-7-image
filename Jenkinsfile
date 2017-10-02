@@ -2,6 +2,15 @@
 
 pipeline {
    agent any
+
+   options {
+      timeout(time: 1, unit: 'HOURS')
+   }
+
+   environment {
+      MAVEN_HOME = tool('Maven')
+   }
+
    stages {
       stage('SCM Checkout') {
          steps {
@@ -14,8 +23,7 @@ pipeline {
             script {
                configFileProvider([configFile(fileId: 'maven-settings-with-prod', variable: 'MAVEN_SETTINGS')]) {
                   script {
-                     def mvnHome = tool 'Maven'
-                     sh 'make MVN_COMMAND="${mvnHome}/bin/mvn -s $MAVEN_SETTINGS" test-unit'
+                     sh 'make MVN_COMMAND="$MAVEN_HOME/bin/mvn -s $MAVEN_SETTINGS" test-unit'
                   }
                }
             }
@@ -27,11 +35,10 @@ pipeline {
             script {
                configFileProvider([configFile(fileId: 'maven-settings-with-prod', variable: 'MAVEN_SETTINGS')]) {
                   script {
-                     def mvnHome = tool 'Maven'
                      try {
-                        sh 'make MVN_COMMAND="${mvnHome}/bin/mvn -s $MAVEN_SETTINGS" start-openshift-with-catalog build-image push-image-to-local-openshift test-functional'
+                        sh 'make MVN_COMMAND="$MAVEN_HOME/bin/mvn -s $MAVEN_SETTINGS" start-openshift-with-catalog build-image push-image-to-local-openshift test-functional'
                      } finally {
-                        sh 'make MVN_COMMAND="${mvnHome}/bin/mvn -s $MAVEN_SETTINGS" stop-openshift clean-docker'
+                        sh 'make MVN_COMMAND="$MAVEN_HOME/bin/mvn -s $MAVEN_SETTINGS" stop-openshift clean-docker'
                      }
                   }
                }
