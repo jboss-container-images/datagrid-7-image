@@ -5,6 +5,5 @@
   roles:
   - role: ansible.kubernetes-modules
     install_python_requirements: no
-  - role: ansibleplaybookbundle.asb-modules
   - role: bind-datagrid-online-services-apb
     playbook_debug: false

@@ -1,8 +1,16 @@
-DEV_IMAGE_NAME = datagrid-online-services-dev
-DEV_APB_IMAGE_NAME = datagrid-online-services-apb-dev
 DEV_IMAGE_ORG = jboss-dataservices
+
+DEV_IMAGE_NAME = datagrid-online-services-dev
 DEV_IMAGE_FULL_NAME = $(DEV_IMAGE_ORG)/$(DEV_IMAGE_NAME)
-DEV_APB_IMAGE_FULL_NAME = $(DEV_IMAGE_ORG)/$(DEV_IMAGE_NAME)
+
+# In order to test this image we need to do a little trick. The APB image is pushed under the following name:
+# http://$REGISTRY:5000/myproject/datagrid-online-services-apb
+# Since the project name (myproject) and image name (datagrid-online-services-apb) match
+# OpenShift "thinks" that this image has already been pulled from some registry.
+# But the reality is different - we pushed it...
+DEV_APB_IMAGE_NAME = datagrid-online-services-apb
+DEV_APB_IMAGE_FULL_NAME = $(DEV_IMAGE_ORG)/$(DEV_APB_IMAGE_NAME)
+
 MVN_COMMAND = mvn
 
 # You may replace it with your custom command. See https://github.com/ansibleplaybookbundle/ansible-playbook-bundle#installing-the-apb-tool
@@ -10,9 +18,12 @@ APB_COMMAND = docker run --rm --privileged -v `pwd`:/mnt -v ${HOME}/.kube:/.kube
 
 _TEST_PROJECT = myproject
 _REGISTRY_IP = $(shell oc get svc/docker-registry -n default -o yaml | grep 'clusterIP:' | awk '{print $$2}')
-_ANSIBLE_SERVICE_BROKER_IP = $(shell oc get svc/asb -n ansible-service-broker -o yaml | grep 'clusterIP:' | awk '{print $$2}')
 _IMAGE = $(_REGISTRY_IP):5000/$(_TEST_PROJECT)/$(DEV_IMAGE_NAME)
 _APB_IMAGE = $(_REGISTRY_IP):5000/$(_TEST_PROJECT)/$(DEV_APB_IMAGE_NAME)
+# This username and password is hardcoded (and base64 encoded) in the Ansible
+# Service Broker template
+_ANSIBLE_SERVICE_BROKER_USERNAME = admin
+_ANSIBLE_SERVICE_BROKER_PASSWORD = admin
 
 start-openshift-with-catalog:
 	@echo "---- Starting OpenShift ----"
@@ -29,21 +40,13 @@ start-openshift-with-catalog:
 
 	@echo "---- Installing Ansible Service Broker ----"
 	oc new-project ansible-service-broker
-	# The Ansible Service Broker page suggests to use  run_latest_build.sh script, but I hit
-	# https://github.com/openshift/ansible-service-broker/issues/443
-	# That's why we need a workaround.
-	# The second thing is that sometimes a Route is not accessible (probably due to 443 issue I mentioned the above)
-	# so we need to alter routing address to Service (not Route).
 	( \
-		cat service-broker/deploy-ansible-service-broker.template.yaml \
+		curl -s https://raw.githubusercontent.com/openshift/ansible-service-broker/master/templates/deploy-ansible-service-broker.template.yaml \
         | oc process \
         -n ansible-service-broker \
         -p BROKER_KIND="Broker" \
-        -p INSECURE="true" \
-        -p INSECURE_EDGE="Allow" \
-        -p TERMINATION="edge" \
-        -p ASB_SCHEME="http" \
-        -p ENABLE_BASIC_AUTH="false" -f - | oc create -f - \
+        -p BROKER_AUTH="{\"basicAuthSecret\":{\"namespace\":\"ansible-service-broker\",\"name\":\"asb-auth-secret\"}}" \
+        -p ENABLE_BASIC_AUTH="true" -f - | oc create -f - \
 	)
 
 	@echo "---- Switching to test project ----"
@@ -150,8 +153,8 @@ _add_apb_roles:
 apb-push-to-local-broker: _add_openshift_push_permissions _add_apb_roles apb-build _login_to_openshift
 	(\
 		cd service-broker/datagrid-online-services-apb; \
-		$(APB_COMMAND) push --broker http://$(_ANSIBLE_SERVICE_BROKER_IP):1338; \
-		$(APB_COMMAND) list --broker http://$(_ANSIBLE_SERVICE_BROKER_IP):1338; \
+		$(APB_COMMAND) push -u $(_ANSIBLE_SERVICE_BROKER_USERNAME) -p $(_ANSIBLE_SERVICE_BROKER_PASSWORD); \
+		$(APB_COMMAND) list -u $(_ANSIBLE_SERVICE_BROKER_USERNAME) -p $(_ANSIBLE_SERVICE_BROKER_PASSWORD); \
 	)
 	sudo docker tag $(DEV_APB_IMAGE_FULL_NAME) $(_APB_IMAGE)
 	sudo docker push $(_APB_IMAGE)
