@@ -4,7 +4,7 @@ _p: &_p
     type: string
     title: Application Name
     required: true
-  - name: image
+  - name: docker_image
     default: docker-registry.engineering.redhat.com/jboss-dataservices/datagrid-online-services
     type: string
     title: Image

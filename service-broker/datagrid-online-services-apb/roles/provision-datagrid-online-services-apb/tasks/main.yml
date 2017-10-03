@@ -2,10 +2,10 @@
 # I also asked why they are not using the same API as K8s: https://github.com/ansible/ansible-kubernetes-modules/issues/7
 
 # This needs to be called twice: https://github.com/ansibleplaybookbundle/ansible-playbook-bundle/issues/118
-- name: Create Service Account
-  k8s_v1_service_account:
-    name: '{{ application_name }}'
-    namespace: '{{ namespace }}'
+#- name: Create Service Account
+#  k8s_v1_service_account:
+#    name: '{{ application_name }}'
+#    namespace: '{{ namespace }}'
 
 # Blocked because of:
 # - https://github.com/ansibleplaybookbundle/ansible-playbook-bundle/issues/120

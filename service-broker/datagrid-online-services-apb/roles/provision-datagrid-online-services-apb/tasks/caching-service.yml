@@ -34,7 +34,7 @@
             fieldRef:
               apiVersion: v1
               fieldPath: metadata.namespace
-      image: '{{ image }}'
+      image: '{{ docker_image }}'
       ports:
       - container_port: 8080
         name: http

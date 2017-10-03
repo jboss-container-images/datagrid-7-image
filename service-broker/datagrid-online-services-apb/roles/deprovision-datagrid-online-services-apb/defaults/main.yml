@@ -1,5 +1,5 @@
 ---
 _apb_plan_id: "caching-service"
 application_name: "caching-service"
-image: "docker-registry.engineering.redhat.com/jboss-dataservices/datagrid-online-services"
+docker_image: "docker-registry.engineering.redhat.com/jboss-dataservices/datagrid-online-services"
 state: present
