@@ -7,13 +7,14 @@ pipeline {
       timeout(time: 1, unit: 'HOURS')
    }
 
-   environment {
-      MAVEN_HOME = tool('Maven')
-   }
-
    stages {
-      stage('SCM Checkout') {
+      stage('Prepare') {
          steps {
+            // Workaround for JENKINS-47230
+            script {
+               env.MAVEN_HOME = tool('Maven')
+            }
+
             checkout scm
          }
       }
