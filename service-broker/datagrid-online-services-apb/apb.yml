@@ -1,15 +1,3 @@
-_p: &_p
-  - name: application_name
-    default: caching-service
-    type: string
-    title: Application Name
-    required: true
-  - name: docker_image
-    default: docker-registry.engineering.redhat.com/jboss-dataservices/datagrid-online-services
-    type: string
-    title: Image
-    required: true
-
 name: datagrid-online-services-apb
 image: jboss-dataservices/datagrid-online-services-apb
 description: Red Hat JBoss Data Grid Online Services
@@ -27,11 +15,31 @@ plans:
      metadata:
        displayName: Caching Service
        cost: $0.00
-     parameters: *_p
+     parameters:
+       - name: application_name
+         default: caching-service
+         type: string
+         title: Application Name
+         required: true
+       - name: docker_image
+         default: docker-registry.engineering.redhat.com/jboss-dataservices/datagrid-online-services
+         type: string
+         title: Image
+         required: true
    - name: shared-memory-service
      description: Provides a standalone JBoss Data Grid Caching Service (a high performance, scalable, key/value data grid solution) with persistence.
      free: False
      metadata:
        displayName: Shared Memory Service
        cost: $1.00 monthly
-     parameters: *_p
+     parameters:
+       - name: application_name
+         default: shared-memory-service
+         type: string
+         title: Application Name
+         required: true
+       - name: docker_image
+         default: docker-registry.engineering.redhat.com/jboss-dataservices/datagrid-online-services
+         type: string
+         title: Image
+         required: true
