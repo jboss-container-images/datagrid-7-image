@@ -150,7 +150,16 @@ _add_apb_roles:
 	oc policy add-role-to-user cluster-admin system:serviceaccount:myproject:default -n myproject || true
 .PHONY: _add_apb_roles
 
-apb-push-to-local-broker: _add_openshift_push_permissions _add_apb_roles apb-build _login_to_openshift
+_wait_for_ansible_service_broker:
+	( \
+		until oc get pods -n ansible-service-broker | grep asb | grep "2/2" > /dev/null; do \
+			sleep 20; \
+			echo "Waiting for Ansible Service Broker..."; \
+		done; \
+	)
+.PHONY: _wait_for_ansible_service_broker
+
+apb-push-to-local-broker: _add_openshift_push_permissions _add_apb_roles apb-build _login_to_openshift _wait_for_ansible_service_broker
 	(\
 		cd service-broker/datagrid-online-services-apb; \
 		$(APB_COMMAND) push -u $(_ANSIBLE_SERVICE_BROKER_USERNAME) -p $(_ANSIBLE_SERVICE_BROKER_PASSWORD); \
