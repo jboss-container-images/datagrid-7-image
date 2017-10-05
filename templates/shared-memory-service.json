@@ -239,7 +239,7 @@
                         "livenessProbe": {
                            "exec": {
                               "command": [
-                                 "/usr/local/bin/is_running.sh"
+                                 "/opt/datagrid/bin/livenessProbe.sh"
                               ]
                            },
                            "initialDelaySeconds": 5,

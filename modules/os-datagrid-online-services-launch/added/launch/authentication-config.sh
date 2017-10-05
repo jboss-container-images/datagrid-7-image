@@ -87,5 +87,5 @@ function add_realm_domain_mapping() {
   fi
   realm="$realm $ssl</security-realm>"
 
-  sed -i "s|<!-- ##DATAGRID_REALM## -->|${realm}|" "${CONFIG_FILE}"
+  sed -i "s|<!-- ##DATAGRID_REALM## -->|${realm}|" "/opt/datagrid/standalone/configuration/${CONFIG_FILE}"
 }

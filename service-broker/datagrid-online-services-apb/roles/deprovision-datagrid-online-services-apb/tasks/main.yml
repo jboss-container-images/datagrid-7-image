@@ -1,14 +1,15 @@
-- name: Delete Service Account
-  k8s_v1_service_account:
-    name: '{{ application_name }}'
-    namespace: '{{ namespace }}'
-    state: absent
-
-- name: Delete Role Binding
-  openshift_v1_role_binding:
-    namespace: '{{ namespace }}'
-    name: '{{ application_name }}'
-    state: absent
+# https://github.com/ansibleplaybookbundle/ansible-playbook-bundle/issues/133
+#- name: Delete Service Account
+#  k8s_v1_service_account:
+#    name: '{{ application_name }}'
+#    namespace: '{{ namespace }}'
+#    state: absent
+#
+#- name: Delete Role Binding
+#  openshift_v1_role_binding:
+#    namespace: '{{ namespace }}'
+#    name: '{{ application_name }}'
+#    state: absent
 
 - name: Delete HTTP Service
   k8s_v1_service:
