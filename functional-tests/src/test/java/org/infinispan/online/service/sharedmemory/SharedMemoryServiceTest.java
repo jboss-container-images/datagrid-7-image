@@ -1,4 +1,4 @@
-package org.infinispan.online.service.caching;
+package org.infinispan.online.service.sharedmemory;
 
 import org.arquillian.cube.kubernetes.annotations.Named;
 import org.arquillian.cube.openshift.impl.requirement.RequiresOpenshift;
@@ -14,16 +14,15 @@ import java.net.URL;
 
 @RunWith(ArquillianConditionalRunner.class)
 @RequiresOpenshift
-public class CachingServiceTest {
+public class SharedMemoryServiceTest {
 
-   @Named("caching-service-app-hotrod")
+   @Named("shared-memory-service-app-hotrod")
    @ArquillianResource
    URL hotRodService;
 
-   @Named("caching-service-app-http")
+   @Named("shared-memory-service-app-http")
    @ArquillianResource
    URL restService;
-
 
    HotRodTester hotRodTester = new HotRodTester();
    RESTTester restTester = new RESTTester();
@@ -34,7 +33,7 @@ public class CachingServiceTest {
    }
 
    @Test
-   public void should_default_cache_be_accessible_via_REST() throws IOException {
-      restTester.testBasicEndpointCapabilities(restService);
+   public void should_default_cache_be_protected_via_REST() throws IOException {
+      restTester.testIfEndpointIsProtected(restService);
    }
 }
