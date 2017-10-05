@@ -17,7 +17,7 @@ plans:
        cost: $0.00
      parameters:
        - name: application_name
-         default: caching-service
+         default: caching-service-app
          type: string
          title: Application Name
          required: true
@@ -34,7 +34,7 @@ plans:
        cost: $1.00 monthly
      parameters:
        - name: application_name
-         default: shared-memory-service
+         default: shared-memory-service-app
          type: string
          title: Application Name
          required: true
