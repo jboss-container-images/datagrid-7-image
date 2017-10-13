@@ -38,6 +38,14 @@ start-openshift-with-catalog:
 	oc project openshift
 	oc adm policy add-cluster-role-to-group system:openshift:templateservicebroker-client system:unauthenticated system:authenticated
 
+	@echo "---- Switching to test project ----"
+	oc project $(_TEST_PROJECT)
+.PHONY: start-openshift-with-catalog
+
+start-openshift-with-catalog-and-ansible-service-broker: start-openshift-with-catalog install-ansible-service-broker
+.PHONY: start-openshift-with-catalog-and-ansible-service-broker
+
+install-ansible-service-broker:
 	@echo "---- Installing Ansible Service Broker ----"
 	oc new-project ansible-service-broker
 	( \
@@ -48,10 +56,7 @@ start-openshift-with-catalog:
         -p BROKER_AUTH="{\"basicAuthSecret\":{\"namespace\":\"ansible-service-broker\",\"name\":\"asb-auth-secret\"}}" \
         -p ENABLE_BASIC_AUTH="true" -f - | oc create -f - \
 	)
-
-	@echo "---- Switching to test project ----"
-	oc project $(_TEST_PROJECT)
-.PHONY: start-openshift-with-catalog
+.PHONY: install-ansible-service-broker
 
 stop-openshift:
 	oc cluster down
