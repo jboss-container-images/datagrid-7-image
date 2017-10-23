@@ -8,6 +8,9 @@
    <version>1.0.0-SNAPSHOT</version>
 
    <properties>
+      <maven.compiler.source>1.8</maven.compiler.source>
+      <maven.compiler.target>1.8</maven.compiler.target>
+
       <infinispan-client-hotrod.version>8.4.0.Final-redhat-2</infinispan-client-hotrod.version>
       <openshift-client.version>2.6.1</openshift-client.version>
       <arquillian-junit-standalone.version>1.1.13.Final</arquillian-junit-standalone.version>
