@@ -128,7 +128,7 @@ test-shared-memory-service-manually:
 .PHONY: test-shared-memory-service-manually
 
 clean-maven:
-	$(MVN_COMMAND) clean -f modules/os-jdg-caching-service-configuration/pom.xml || true
+	$(MVN_COMMAND) clean -f modules/os-datagrid-online-services-configuration/pom.xml || true
 	$(MVN_COMMAND) clean -f functional-tests/pom.xml || true
 .PHONY: clean-maven
 
