@@ -24,7 +24,7 @@ public class SharedMemoryServiceConfigurationTest {
 
    @Before
    public void beforeTest() throws IOException {
-      Path baselineConfiguration = testResourceLocator.locateFile("caching-service/cloud-7.1.xml");
+      Path baselineConfiguration = testResourceLocator.locateFile("caching-service/cloud-7.2.xml");
       Files.copy(baselineConfiguration, cloudXml, StandardCopyOption.REPLACE_EXISTING);
    }
 
@@ -51,7 +51,7 @@ public class SharedMemoryServiceConfigurationTest {
       XmlAssertion.assertThat(cloudXml)
       .hasXPath("//*[local-name()='stack' and @name='kubernetes']")
       .hasXPath("//*[local-name()='transport' and @type='TCP']")
-      .hasXPath("//*[local-name()='protocol' and @type='openshift.KUBE_PING']")
+      .hasXPath("//*[local-name()='protocol' and @type='kubernetes.KUBE_PING']")
       .hasXPath("//*[local-name()='protocol' and @type='FD_SOCK']")
       .hasXPath("//*[local-name()='protocol' and @type='FD_ALL']")
       .hasXPath("//*[local-name()='protocol' and @type='VERIFY_SUSPECT']")

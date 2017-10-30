@@ -2,7 +2,8 @@ package org.infinispan.online.service.endpoint;
 
 import java.net.URL;
 
-import static com.jayway.restassured.RestAssured.given;
+import static io.restassured.RestAssured.given;
+
 
 public class RESTTester implements EndpointTester {
 
