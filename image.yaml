@@ -2,7 +2,7 @@ schema_version: 1
 name: "jboss-dataservices/datagrid-online-services"
 description: "Red Hat JBoss Data Grid Services"
 version: "1.0"
-from: "jboss-datagrid-7/datagrid71-openshift:1.0"
+from: "jboss-datagrid-7/datagrid72-openshift:1.0"
 labels:
     - name: "io.k8s.description"
       value: "Provides a scalable in-memory caching solution for fast access to large volumes of data."
@@ -25,3 +25,4 @@ modules:
         - name: os-datagrid-online-services-launch
         - name: os-datagrid-online-services-configuration
         - name: os-datagrid-online-services-probes
+        - name: os-datagrid-online-modules-layers-ordering

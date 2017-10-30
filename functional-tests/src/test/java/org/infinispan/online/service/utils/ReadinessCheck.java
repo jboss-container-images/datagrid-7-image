@@ -19,7 +19,7 @@ public class ReadinessCheck {
             break;
          }
          System.out.println("Some pods are not ready: " + notReadyPods);
-         LockSupport.parkNanos(++backoffCounter * 10_000);
+         LockSupport.parkNanos(++backoffCounter * 10_000_000);
       }
    }
 
