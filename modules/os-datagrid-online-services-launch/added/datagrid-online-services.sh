@@ -13,7 +13,7 @@ CONFIGURE_SCRIPTS=(
 
 source $JBOSS_HOME/bin/launch/configure.sh
 
-$JBOSS_HOME/bin/launch/jdg-online-configuration.sh --profile=$PROFILE
+$JBOSS_HOME/bin/launch/jdg-online-configuration.sh --profile $PROFILE
 if [[ $? -ne 0 ]]; then
     echo "WARNING: Profile ${PROFILE} doesn't exist. Falling back to Caching Service."
 fi
