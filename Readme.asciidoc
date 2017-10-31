@@ -61,3 +61,8 @@ What's next?
 ------------
 
 If you're interested in our plans, visit our https://issues.jboss.org/secure/RapidBoard.jspa?rapidView=4167[JIRA board].
+
+Useful links (mostly for development)
+-------------------------------------
+
+* Wildfly CLI guide: https://developer.jboss.org/wiki/CommandLineInterface
