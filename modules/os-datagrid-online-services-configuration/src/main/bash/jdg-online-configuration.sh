@@ -24,35 +24,42 @@ function check_if_cli_exists() {
    fi
 }
 
-while [ "$1" != "" ]; do
-    PARAM=`echo $1 | awk -F= '{print $1}'`
-    VALUE=`echo $1 | awk -F= '{print $2}'`
-    case $PARAM in
-        -h | --help)
-            usage
-            exit
-            ;;
-        --profile)
-            PROFILE=$VALUE
-            ;;
-        --profiles-directory)
-            PROFILES_DIRECTORY=$VALUE
-            ;;
-        --cli-bin)
-            CLI=$VALUE
-            ;;
-        *)
-            echo "ERROR: unknown parameter \"$PARAM\""
-            usage
-            exit 1
-            ;;
-    esac
-    shift
+ADDITIONAL_PARAMETERS=()
+while [[ $# -gt 0 ]]
+do
+key="$1"
+
+case $key in
+   -h | --help)
+   usage
+   exit
+   ;;
+   --profile)
+   PROFILE="$2"
+   shift
+   shift
+   ;;
+   --profiles-directory)
+   PROFILES_DIRECTORY="$2"
+   shift
+   shift
+   ;;
+   --cli-bin)
+   CLI="$2"
+   shift
+   shift
+   ;;
+   *)
+   ADDITIONAL_PARAMETERS+=("$1")
+   shift
+   ;;
+esac
 done
+set -- "${ADDITIONAL_PARAMETERS[@]}"
 
 check_if_profile_exists
 check_if_cli_exists
 
-$CLI --file="${PROFILES_DIRECTORY}/${PROFILE}.cli"
+$CLI $* --file="${PROFILES_DIRECTORY}/${PROFILE}.cli"
 
 exit $?

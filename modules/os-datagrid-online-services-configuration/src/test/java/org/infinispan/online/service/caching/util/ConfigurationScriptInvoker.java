@@ -37,9 +37,12 @@ public class ConfigurationScriptInvoker {
 
       List<String> command = new ArrayList<>();
       command.add(script.toAbsolutePath().toString());
-      command.add("--profile=" + profile);
-      command.add("--cli-bin=" + cli.toAbsolutePath().toString());
-      command.add("--profiles-directory=" + profiles.toAbsolutePath().toString());
+      command.add("--profile");
+      command.add(profile);
+      command.add("--cli-bin");
+      command.add(cli.toAbsolutePath().toString());
+      command.add("--profiles-directory");
+      command.add(profiles.toAbsolutePath().toString());
 
       try {
          Process p = new ProcessBuilder(command).start();
