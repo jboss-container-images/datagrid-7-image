@@ -19,13 +19,13 @@ public class SharedMemoryServiceConfigurationTest {
    ConfigurationScriptInvoker configurationScriptInvoker = new ConfigurationScriptInvoker();
    TestResourceLocator testResourceLocator = new TestResourceLocator();
 
-   Path cloudXml = testServerLocator.locateServer().resolve("standalone/configuration/cloud.xml");
+   Path servicesXml = testServerLocator.locateServer().resolve("standalone/configuration/services.xml");
    Path jbossHome = testServerLocator.locateServer();
 
    @Before
    public void beforeTest() throws IOException {
-      Path baselineConfiguration = testResourceLocator.locateFile("caching-service/cloud-7.2.xml");
-      Files.copy(baselineConfiguration, cloudXml, StandardCopyOption.REPLACE_EXISTING);
+      Path baselineConfiguration = testResourceLocator.locateFile("caching-service/services-7.2.xml");
+      Files.copy(baselineConfiguration, servicesXml, StandardCopyOption.REPLACE_EXISTING);
    }
 
    @Test
@@ -35,9 +35,9 @@ public class SharedMemoryServiceConfigurationTest {
 
       //then
       ResultAssertion.assertThat(result).printResult().isOk();
-      XmlAssertion.assertThat(cloudXml).hasXPath("//*[local-name()='memcached-connector']");
-      XmlAssertion.assertThat(cloudXml).hasXPath("//*[local-name()='rest-connector']");
-      XmlAssertion.assertThat(cloudXml).hasXPath("//*[local-name()='hotrod-connector']");
+      XmlAssertion.assertThat(servicesXml).hasXPath("//*[local-name()='memcached-connector']");
+      XmlAssertion.assertThat(servicesXml).hasXPath("//*[local-name()='rest-connector']");
+      XmlAssertion.assertThat(servicesXml).hasXPath("//*[local-name()='hotrod-connector']");
    }
 
    @Test
@@ -48,7 +48,7 @@ public class SharedMemoryServiceConfigurationTest {
       //then
       ResultAssertion.assertThat(result).printResult().isOk();
 
-      XmlAssertion.assertThat(cloudXml)
+      XmlAssertion.assertThat(servicesXml)
       .hasXPath("//*[local-name()='stack' and @name='kubernetes']")
       .hasXPath("//*[local-name()='transport' and @type='TCP']")
       .hasXPath("//*[local-name()='protocol' and @type='kubernetes.KUBE_PING']")
@@ -71,21 +71,13 @@ public class SharedMemoryServiceConfigurationTest {
       //then
       ResultAssertion.assertThat(result).printResult().isOk();
 
-      XmlAssertion.assertThat(cloudXml)
-         .hasXPath("//*[local-name()='distributed-cache-configuration' and @name='persistent-file-store-write-behind']")
-         .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='async']")
-         .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='indexed']")
-         .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='memory-bounded']")
-         .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='persistent-file-store-passivation']")
-         .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='persistent-file-store']")
-         .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='persistent-jdbc-binary-keyed']")
-         .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='persistent-jdbc-string-keyed']")
-         .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='persistent-leveldb-store']")
-         .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='transactional']")
+      XmlAssertion.assertThat(servicesXml)
+         .hasXPath("//*[local-name()='distributed-cache-configuration' and @name='shared-memory-service']")
+         .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='caching-service']")
+         .hasXPath("//*[local-name()='distributed-cache' and @name='default' and @configuration='shared-memory-service']")
+         .hasXPath("//*[local-name()='distributed-cache' and @name='memcachedCache' and @configuration='shared-memory-service']");
 //  https://issues.jboss.org/browse/ISPN-8341
 //         .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='default']")
 //         .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='memcachedCache']")
-         .hasXPath("//*[local-name()='distributed-cache' and @name='default' and @configuration='persistent-file-store-write-behind']")
-         .hasXPath("//*[local-name()='distributed-cache' and @name='memcachedCache' and @configuration='persistent-file-store-write-behind']");
    }
 }

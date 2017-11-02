@@ -2,7 +2,7 @@
 
 PROFILE=${PROFILE:=CACHING-SERVICE}
 PROFILE=${PROFILE,,}
-CONFIG_FILE=${CONFIG_FILE:=cloud.xml}
+CONFIG_FILE=${CONFIG_FILE:=services.xml}
 JGROUPS_STACK=kubernetes
 LOGGING_FILE=$JBOSS_HOME/standalone/configuration/logging.properties
 

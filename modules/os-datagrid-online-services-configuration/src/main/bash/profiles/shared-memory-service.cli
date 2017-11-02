@@ -1,40 +1,10 @@
-embed-server --server-config=cloud.xml --std-out=echo
+embed-server --server-config=services.xml --std-out=echo
 
-if (outcome == success) of /subsystem=datagrid-infinispan/cache-container=clustered/replicated-cache=repl:read-resource
-   /subsystem=datagrid-infinispan/cache-container=clustered/replicated-cache=repl:remove
-end-if
-if (outcome == success) of /subsystem=datagrid-infinispan/cache-container=clustered/configurations=CONFIGURATIONS/replicated-cache-configuration=replicated:read-resource
-   /subsystem=datagrid-infinispan/cache-container=clustered/configurations=CONFIGURATIONS/replicated-cache-configuration=replicated:remove
-end-if
-if (outcome == success) of /subsystem=datagrid-infinispan/cache-container=clustered/configurations=CONFIGURATIONS/distributed-cache-configuration=async:read-resource
-   /subsystem=datagrid-infinispan/cache-container=clustered/configurations=CONFIGURATIONS/distributed-cache-configuration=async:remove
-end-if
-if (outcome == success) of /subsystem=datagrid-infinispan/cache-container=clustered/configurations=CONFIGURATIONS/distributed-cache-configuration=indexed:read-resource
-   /subsystem=datagrid-infinispan/cache-container=clustered/configurations=CONFIGURATIONS/distributed-cache-configuration=indexed:remove
-end-if
-if (outcome == success) of /subsystem=datagrid-infinispan/cache-container=clustered/configurations=CONFIGURATIONS/distributed-cache-configuration=memory-bounded:read-resource
-   /subsystem=datagrid-infinispan/cache-container=clustered/configurations=CONFIGURATIONS/distributed-cache-configuration=memory-bounded:remove
-end-if
-if (outcome == success) of /subsystem=datagrid-infinispan/cache-container=clustered/configurations=CONFIGURATIONS/distributed-cache-configuration=persistent-file-store-passivation:read-resource
-   /subsystem=datagrid-infinispan/cache-container=clustered/configurations=CONFIGURATIONS/distributed-cache-configuration=persistent-file-store-passivation:remove
-end-if
-if (outcome == success) of /subsystem=datagrid-infinispan/cache-container=clustered/configurations=CONFIGURATIONS/distributed-cache-configuration=persistent-file-store:read-resource
-   /subsystem=datagrid-infinispan/cache-container=clustered/configurations=CONFIGURATIONS/distributed-cache-configuration=persistent-file-store:remove
-end-if
-if (outcome == success) of /subsystem=datagrid-infinispan/cache-container=clustered/configurations=CONFIGURATIONS/distributed-cache-configuration=persistent-jdbc-binary-keyed:read-resource
-   /subsystem=datagrid-infinispan/cache-container=clustered/configurations=CONFIGURATIONS/distributed-cache-configuration=persistent-jdbc-binary-keyed:remove
-end-if
-if (outcome == success) of /subsystem=datagrid-infinispan/cache-container=clustered/configurations=CONFIGURATIONS/distributed-cache-configuration=persistent-jdbc-string-keyed:read-resource
-   /subsystem=datagrid-infinispan/cache-container=clustered/configurations=CONFIGURATIONS/distributed-cache-configuration=persistent-jdbc-string-keyed:remove
-end-if
-if (outcome == success) of /subsystem=datagrid-infinispan/cache-container=clustered/configurations=CONFIGURATIONS/distributed-cache-configuration=persistent-leveldb-store:read-resource
-   /subsystem=datagrid-infinispan/cache-container=clustered/configurations=CONFIGURATIONS/distributed-cache-configuration=persistent-leveldb-store:remove
-end-if
-if (outcome == success) of /subsystem=datagrid-infinispan/cache-container=clustered/configurations=CONFIGURATIONS/distributed-cache-configuration=transactional:read-resource
-   /subsystem=datagrid-infinispan/cache-container=clustered/configurations=CONFIGURATIONS/distributed-cache-configuration=transactional:remove
+if (outcome == success) of /subsystem=datagrid-infinispan/cache-container=clustered/configurations=CONFIGURATIONS/distributed-cache-configuration=caching-service:read-resource
+   /subsystem=datagrid-infinispan/cache-container=clustered/configurations=CONFIGURATIONS/distributed-cache-configuration=caching-service:remove
 end-if
 
-/subsystem=datagrid-infinispan/cache-container=clustered/distributed-cache=default:write-attribute(name=configuration, value=persistent-file-store-write-behind)
-/subsystem=datagrid-infinispan/cache-container=clustered/distributed-cache=memcachedCache:write-attribute(name=configuration, value=persistent-file-store-write-behind)
+/subsystem=datagrid-infinispan/cache-container=clustered/distributed-cache=default:write-attribute(name=configuration, value=shared-memory-service)
+/subsystem=datagrid-infinispan/cache-container=clustered/distributed-cache=memcachedCache:write-attribute(name=configuration, value=shared-memory-service)
 
 stop-embedded-server
