@@ -21,10 +21,15 @@ public class ResultAssertion extends AbstractAssert<ResultAssertion, Configurati
       return this;
    }
 
+   public ResultAssertion isFailed() {
+      if (actual.getResultCode() == 0) {
+         failWithMessage("The script returned without an error. Script's output:\n%s", actual.getResultCode(), actual.getOutput());
+      }
+      return this;
+   }
+
    public ResultAssertion printResult() {
       System.out.println(actual.getOutput());
       return this;
    }
-
-
 }

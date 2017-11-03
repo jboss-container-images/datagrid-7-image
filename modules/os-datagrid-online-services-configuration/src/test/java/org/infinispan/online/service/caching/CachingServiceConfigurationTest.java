@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.Map;
 
+import org.assertj.core.util.Maps;
 import org.infinispan.online.service.caching.assertions.ResultAssertion;
 import org.infinispan.online.service.caching.assertions.XmlAssertion;
 import org.infinispan.online.service.caching.util.ConfigurationScriptInvoker;
@@ -20,7 +22,9 @@ public class CachingServiceConfigurationTest {
    TestResourceLocator testResourceLocator = new TestResourceLocator();
 
    Path cloudXml = testServerLocator.locateServer().resolve("standalone/configuration/cloud.xml");
-   Path cli = testServerLocator.locateCLI();
+   Path jbossHome = testServerLocator.locateServer();
+
+   Map<String, String> requiredScriptParameters = Maps.newHashMap("eviction_total_memory_bytes", "1");
 
    @Before
    public void beforeTest() throws IOException {
@@ -29,9 +33,18 @@ public class CachingServiceConfigurationTest {
    }
 
    @Test
+   public void should_fail_if_no_eviction_total_memory_bytes_is_specified() {
+      //when
+      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "caching-service");
+
+      //then
+      ResultAssertion.assertThat(result).printResult().isFailed();
+   }
+
+   @Test
    public void should_leave_all_endpoints() {
      //when
-      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(cli, "caching-service");
+      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "caching-service", requiredScriptParameters);
 
       //then
       ResultAssertion.assertThat(result).printResult().isOk();
@@ -43,7 +56,7 @@ public class CachingServiceConfigurationTest {
    @Test
    public void should_add_kube_ping() {
       //when
-      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(cli, "caching-service");
+      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "caching-service", requiredScriptParameters);
 
       //then
       ResultAssertion.assertThat(result).printResult().isOk();
@@ -66,7 +79,7 @@ public class CachingServiceConfigurationTest {
    @Test
    public void should_modify_default_cache_to_num_of_owners_1() {
       //when
-      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(cli, "caching-service");
+      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "caching-service", requiredScriptParameters);
 
       //then
       ResultAssertion.assertThat(result).printResult().isOk();
@@ -75,9 +88,23 @@ public class CachingServiceConfigurationTest {
    }
 
    @Test
+   public void should_add_off_heap_with_eviction() {
+      //when
+      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "caching-service", requiredScriptParameters);
+
+      //then
+      ResultAssertion.assertThat(result).printResult().isOk();
+
+      XmlAssertion.assertThat(cloudXml)
+         .hasXPath("//*[local-name()='distributed-cache' and @name='default']//*[local-name()='memory']")
+         .hasXPath("//*[local-name()='distributed-cache' and @name='default']//*[local-name()='memory']//*[local-name()='object']")
+         .hasXPath("//*[local-name()='distributed-cache' and @name='default']//*[local-name()='memory']//*[local-name()='object' and @size='1']");
+   }
+
+   @Test
    public void should_remove_authentication_from_rest() {
       //when
-      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(cli, "caching-service");
+      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "caching-service", requiredScriptParameters);
 
       //then
       ResultAssertion.assertThat(result).printResult().isOk();
