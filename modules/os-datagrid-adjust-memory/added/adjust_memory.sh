@@ -1,8 +1,19 @@
 #!/bin/sh
 
-# For backward compatibility: CONTAINER_HEAP_PERCENT is old variable name
-JAVA_MAX_MEM_RATIO=${JAVA_MAX_MEM_RATIO:-$(echo "${CONTAINER_HEAP_PERCENT:-0.5}" "100" | awk '{ printf "%d", $1 * $2 }')}
-JAVA_INITIAL_MEM_RATIO=${JAVA_INITIAL_MEM_RATIO:-$(echo "${INITIAL_HEAP_PERCENT:-1.0}" "100" | awk '{ printf "%d", $1 * $2 }')}
+USE_OFF_HEAP=${USE_OFF_HEAP:-true}
+XMX_FOR_OFF_HEAP_MB=52
+JVM_NATIVE_MB=25
+
+function prepareEnv() {
+  unset EVICTION_TOTAL_MEMORY_B
+}
+
+function configure() {
+   if [ ${USE_OFF_HEAP} == "true" ]; then
+       EVICTION_TOTAL_MEMORY_B=$(expr ${CONTAINER_MAX_MEMORY} - ${JVM_NATIVE_MB} * 1000000 - ${XMX_FOR_OFF_HEAP_MB} * 1000000)
+       export EVICTION_TOTAL_MEMORY_B
+   fi
+}
 
 function source_java_run_scripts() {
     local java_scripts_dir="/opt/run-java"
@@ -13,32 +24,6 @@ function source_java_run_scripts() {
 }
 
 source_java_run_scripts
-
-# deprecated, left for backward compatibility
-function get_heap_size {
-    echo $(max_memory)
-}
-
-# deprecated, left for backward compatibility
-get_initial_heap_size() {
-    local max_heap="$1"
-    echo "$max_heap" "${INITIAL_HEAP_PERCENT-1.0}" | awk '{ printf "%d", $1 * $2 }'
-}
-
-# deprecated, left for backward compatibility
-adjust_java_heap_settings() {
-    local java_scripts_dir="/opt/run-java"
-    local java_options=$(source "${java_scripts_dir}/java-default-options")
-    local max_heap=$(echo "${java_options}" | grep -Eo "\-Xmx[^ ]* ")
-    local initial_heap=$(echo "${java_options}" | grep -Eo "\-Xms[^ ]* ")
-
-    if [ -n "$max_heap" ]; then
-        JAVA_OPTS=$(echo $JAVA_OPTS | sed -e "s/-Xmx[^ ]*/${max_heap} /")
-    fi
-    if [ -n "$initial_heap" ]; then
-        JAVA_OPTS=$(echo $JAVA_OPTS | sed -e "s/-Xms[^ ]* /${initial_heap} /")
-    fi
-}
 
 # Returns a set of options that are not supported by the current jvm.  The idea
 # is that java-default-options always configures settings for the latest jvm.
@@ -56,6 +41,7 @@ unsupported_options() {
     fi
 }
 
+
 # Merge default java options into the passed argument
 adjust_java_options() {
     local options="$@"
@@ -63,6 +49,15 @@ adjust_java_options() {
     local java_scripts_dir="/opt/run-java"
     local java_options=$(source "${java_scripts_dir}/java-default-options")
     local unsupported="$(unsupported_options)"
+
+    # Off-heap requires a fixed amount of heap memory. The rest is stored off-heap.
+    # From our measurements it turned out that 52M is enough.
+    if [ ${USE_OFF_HEAP} == "true" ]; then
+      java_options=$(echo ${java_options} | sed -e "s/-Xmx[^ ]*/${option}/")
+      java_options=$(echo ${java_options} | sed -e "s/-Xms[^ ]*/${option}/")
+      java_options="-Xmx${XMX_FOR_OFF_HEAP_MB}M -Xms${XMX_FOR_OFF_HEAP_MB}M ${java_options}"
+    fi
+
     for option in $java_options; do
         if [[ ${option} == "-Xmx"* ]]; then
             if [[ "$options" == *"-Xmx"* ]]; then

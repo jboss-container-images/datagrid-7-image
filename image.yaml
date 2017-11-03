@@ -21,7 +21,7 @@ run:
         - "/opt/datagrid/bin/datagrid-online-services.sh"
 modules:
     install:
-        - name: dynamic-resources
+        - name: os-datagrid-adjust-memory
         - name: os-datagrid-online-services-launch
         - name: os-datagrid-online-services-configuration
         - name: os-datagrid-online-services-probes

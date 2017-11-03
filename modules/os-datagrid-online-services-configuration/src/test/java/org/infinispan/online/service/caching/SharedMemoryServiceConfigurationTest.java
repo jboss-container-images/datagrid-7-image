@@ -20,7 +20,7 @@ public class SharedMemoryServiceConfigurationTest {
    TestResourceLocator testResourceLocator = new TestResourceLocator();
 
    Path cloudXml = testServerLocator.locateServer().resolve("standalone/configuration/cloud.xml");
-   Path cli = testServerLocator.locateCLI();
+   Path jbossHome = testServerLocator.locateServer();
 
    @Before
    public void beforeTest() throws IOException {
@@ -31,7 +31,7 @@ public class SharedMemoryServiceConfigurationTest {
    @Test
    public void should_leave_all_endpoints() {
      //when
-      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(cli, "shared-memory-service");
+      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "shared-memory-service");
 
       //then
       ResultAssertion.assertThat(result).printResult().isOk();
@@ -43,7 +43,7 @@ public class SharedMemoryServiceConfigurationTest {
    @Test
    public void should_add_kube_ping() {
       //when
-      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(cli, "shared-memory-service");
+      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "shared-memory-service");
 
       //then
       ResultAssertion.assertThat(result).printResult().isOk();
@@ -66,7 +66,7 @@ public class SharedMemoryServiceConfigurationTest {
    @Test
    public void should_adjust_configuration_templates() {
       //when
-      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(cli, "shared-memory-service");
+      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "shared-memory-service");
 
       //then
       ResultAssertion.assertThat(result).printResult().isOk();

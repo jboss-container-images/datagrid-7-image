@@ -6,7 +6,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class ConfigurationScriptInvoker {
 
@@ -29,6 +31,10 @@ public class ConfigurationScriptInvoker {
    }
 
    public Result invokeScript(Path cli, String profile) {
+      return invokeScript(cli, profile, Collections.emptyMap());
+   }
+
+   public Result invokeScript(Path jbossHome, String profile, Map<String, String> parameters) {
       Path script = Paths.get(".", "src/main/bash/jdg-online-configuration.sh");
       Path profiles = Paths.get(".", "src/main/bash/profiles");
       if (!Files.exists(script)) {
@@ -39,10 +45,11 @@ public class ConfigurationScriptInvoker {
       command.add(script.toAbsolutePath().toString());
       command.add("--profile");
       command.add(profile);
-      command.add("--cli-bin");
-      command.add(cli.toAbsolutePath().toString());
+      command.add("--jboss-home");
+      command.add(jbossHome.toAbsolutePath().toString());
       command.add("--profiles-directory");
       command.add(profiles.toAbsolutePath().toString());
+      parameters.forEach((k, v) -> command.add(k + "=" + v));
 
       try {
          Process p = new ProcessBuilder(command).start();
