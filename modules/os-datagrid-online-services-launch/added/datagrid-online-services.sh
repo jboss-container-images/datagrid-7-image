@@ -14,7 +14,7 @@ CONFIGURE_SCRIPTS=(
 
 source $JBOSS_HOME/bin/launch/configure.sh
 
-$JBOSS_HOME/bin/launch/jdg-online-configuration.sh --profile $PROFILE "-Deviction_total_memory_bytes=$EVICTION_TOTAL_MEMORY_B"
+$JBOSS_HOME/bin/launch/jdg-online-configuration.sh --profile $PROFILE "eviction_total_memory_bytes=$EVICTION_TOTAL_MEMORY_B"
 if [[ $? -ne 0 ]]; then
     echo "WARNING: Profile ${PROFILE} doesn't exist. Falling back to Caching Service."
 fi

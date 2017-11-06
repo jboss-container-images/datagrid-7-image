@@ -9,6 +9,7 @@ import org.infinispan.online.service.endpoint.RESTTester;
 import org.infinispan.online.service.utils.ReadinessCheck;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -43,6 +44,12 @@ public class CachingServiceTest {
    @Test
    public void should_default_cache_be_accessible_via_hot_rod() throws IOException {
       hotRodTester.testBasicEndpointCapabilities(hotRodService);
+   }
+
+   @Test
+   @Ignore("This test will eventually blow up. We are still tuning off-heap parameters")
+   public void should_not_blow_up_because_of_oom() {
+      hotRodTester.testPutPerformance(hotRodService, 60, TimeUnit.SECONDS);
    }
 
    @Test
