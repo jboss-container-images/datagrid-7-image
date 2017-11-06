@@ -2,7 +2,6 @@ package org.infinispan.online.service.caching;
 
 
 import io.fabric8.openshift.client.OpenShiftClient;
-import org.arquillian.cube.kubernetes.annotations.Named;
 import org.arquillian.cube.openshift.impl.requirement.RequiresOpenshift;
 import org.arquillian.cube.requirement.ArquillianConditionalRunner;
 import org.infinispan.client.hotrod.exceptions.HotRodClientException;
@@ -10,8 +9,10 @@ import org.infinispan.online.service.endpoint.HotRodTester;
 import org.infinispan.online.service.endpoint.RESTTester;
 import org.infinispan.online.service.scaling.ScalingTester;
 import org.infinispan.online.service.utils.OpenShiftCommandlineClient;
+import org.infinispan.online.service.utils.OpenShiftClientCreator;
+import org.infinispan.online.service.utils.OpenShiftHandle;
 import org.infinispan.online.service.utils.ReadinessCheck;
-import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -22,31 +23,29 @@ import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertNull;
+import java.net.MalformedURLException;
 
 @RunWith(ArquillianConditionalRunner.class)
 @RequiresOpenshift
+@RunAsClient //run outside OpenShift
 public class CachingServiceTest {
 
-   @Named("caching-service-app-hotrod")
-   @ArquillianResource
    URL hotRodService;
-
-   @Named("caching-service-app-http")
-   @ArquillianResource
    URL restService;
-
-   @ArquillianResource
-   OpenShiftClient openShiftClient;
-
-   ReadinessCheck readinessCheck = new ReadinessCheck();
    HotRodTester hotRodTester = new HotRodTester("caching-service");
    RESTTester restTester = new RESTTester();
    ScalingTester scalingTester = new ScalingTester();
    OpenShiftCommandlineClient commandlineClient = new OpenShiftCommandlineClient();
 
+   ReadinessCheck readinessCheck = new ReadinessCheck();
+   OpenShiftClient client = OpenShiftClientCreator.getClient();
+   OpenShiftHandle handle = new OpenShiftHandle(client);
+
    @Before
-   public void before() {
-      readinessCheck.waitUntilAllPodsAreReady(openShiftClient);
+   public void before() throws MalformedURLException {
+      readinessCheck.waitUntilAllPodsAreReady(client);
+      hotRodService = handle.getServiceWithName("caching-service-app-hotrod");
+      restService = handle.getServiceWithName("caching-service-app-http");
    }
 
    @Test
@@ -94,6 +93,6 @@ public class CachingServiceTest {
 
    @Test
    public void should_discover_new_cluster_members_when_scaling_up() {
-      scalingTester.testFormingAClusterAfterScalingUp("caching-service-app", hotRodService, commandlineClient, readinessCheck, openShiftClient, hotRodTester);
+      scalingTester.testFormingAClusterAfterScalingUp("caching-service-app", hotRodService, commandlineClient, readinessCheck, client, hotRodTester);
    }
 }
