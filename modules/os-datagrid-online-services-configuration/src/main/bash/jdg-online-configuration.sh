@@ -47,18 +47,15 @@ case $key in
    ;;
    --profile)
    PROFILE="$2"
-   shift
-   shift
+   shift 2
    ;;
    --profiles-directory)
    PROFILES_DIRECTORY="$2"
-   shift
-   shift
+   shift 2
    ;;
    --jboss-home)
    JBOSS_HOME="$2"
-   shift
-   shift
+   shift 2
    ;;
    *)
    ADDITIONAL_PARAMETERS+=("$1")
