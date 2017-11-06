@@ -41,6 +41,7 @@ public class RESTTester implements EndpointTester {
       }
    }
 
+
    public void testIfEndpointIsProtected(URL urlToService) {
       post(urlToService.toString() + "rest/default/should_default_cache_be_accessible_via_REST", "test", 401, false);
    }

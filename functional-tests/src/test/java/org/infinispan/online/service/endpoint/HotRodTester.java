@@ -1,8 +1,13 @@
 package org.infinispan.online.service.endpoint;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import java.net.InetSocketAddress;
 import java.net.URL;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
-
+import java.util.stream.Collectors;
+import io.fabric8.kubernetes.api.model.Pod;
+import org.infinispan.client.hotrod.CacheTopologyInfo;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.configuration.Configuration;
@@ -11,7 +16,6 @@ import org.infinispan.client.hotrod.configuration.SaslQop;
 import org.infinispan.online.service.utils.TestObjectCreator;
 
 import static junit.framework.TestCase.assertNull;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.infinispan.online.service.utils.TestObjectCreator.generateConstBytes;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -59,6 +63,22 @@ public class HotRodTester implements EndpointTester {
    @Override
    public void testIfEndpointIsProtected(URL urlToService) {
       testBasicEndpointCapabilities(urlToService, false);
+   }
+
+   public void testPodsVisible(URL urlToService, List<Pod> pods) {
+      RemoteCache<String, String> defaultCache = getDefaultCache(urlToService, false);
+      CacheTopologyInfo topology = defaultCache.getCacheTopologyInfo();
+
+      List<String> podIPs = pods.stream()
+         .map(pod -> pod.getStatus().getPodIP())
+         .sorted()
+         .collect(Collectors.toList());
+      List<String> cacheNodeIPs = topology.getSegmentsPerServer().keySet().stream()
+         .map(addr -> ((InetSocketAddress)addr).getAddress().getHostAddress())
+         .sorted()
+         .collect(Collectors.toList());
+
+      assertThat(cacheNodeIPs).isEqualTo(podIPs);
    }
 
    public RemoteCache<String, String> getDefaultCache(URL urlToService, boolean authenticate) {

@@ -1,48 +1,59 @@
-package org.infinispan.online.service.sharedmemory;
+package org.infinispan.online.service.caching;
 
+import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.openshift.client.OpenShiftClient;
-import java.io.IOException;
-import java.net.URL;
-
 import org.arquillian.cube.openshift.impl.requirement.RequiresOpenshift;
 import org.arquillian.cube.requirement.ArquillianConditionalRunner;
 import org.infinispan.client.hotrod.exceptions.HotRodClientException;
 import org.infinispan.online.service.endpoint.HotRodTester;
 import org.infinispan.online.service.endpoint.RESTTester;
-import org.infinispan.online.service.scaling.ScalingTester;
-import org.infinispan.online.service.utils.OpenShiftCommandlineClient;
+import org.infinispan.online.service.utils.DeploymentHelper;
 import org.infinispan.online.service.utils.OpenShiftClientCreator;
 import org.infinispan.online.service.utils.OpenShiftHandle;
 import org.infinispan.online.service.utils.ReadinessCheck;
-import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @RunWith(ArquillianConditionalRunner.class)
 @RequiresOpenshift
-@RunAsClient
-public class SharedMemoryServiceTest {
+public class BasicInProjectTest {
 
    URL hotRodService;
    URL restService;
+   HotRodTester hotRodTester = new HotRodTester("caching-service");
+   RESTTester restTester = new RESTTester();
 
    ReadinessCheck readinessCheck = new ReadinessCheck();
-   HotRodTester hotRodTester = new HotRodTester("shared-memory-service");
-   RESTTester restTester = new RESTTester();
-   ScalingTester scalingTester = new ScalingTester();
-   OpenShiftCommandlineClient commandlineClient = new OpenShiftCommandlineClient();
-   OpenShiftClient client;
+   OpenShiftClient client = OpenShiftClientCreator.getClient();
+   OpenShiftHandle handle = new OpenShiftHandle(client);
+
+   @Deployment
+   public static Archive<?> deploymentApp() {
+      return ShrinkWrap
+         .create(WebArchive.class, "test.war")
+         .addAsLibraries(DeploymentHelper.testLibs())
+         .addPackage(CachingServiceTest.class.getPackage())
+         .addPackage(ReadinessCheck.class.getPackage())
+         .addPackage(HotRodTester.class.getPackage());
+   }
 
    @Before
    public void before() throws MalformedURLException {
-      client = OpenShiftClientCreator.getClient();
-      OpenShiftHandle handle = new OpenShiftHandle(client);
       readinessCheck.waitUntilAllPodsAreReady(client);
-      hotRodService = handle.getServiceWithName("shared-memory-service-app-hotrod");
-      restService = handle.getServiceWithName("shared-memory-service-app-http");
+      hotRodService = handle.getServiceWithName("caching-service-app-hotrod");
+      restService = handle.getServiceWithName("caching-service-app-http");
    }
 
    @Test
@@ -65,8 +76,10 @@ public class SharedMemoryServiceTest {
       restTester.testIfEndpointIsProtected(restService);
    }
 
+   @Ignore //enable after trying in real OpenShift installation, with "oc cluster up" the client sees all pods even from outside OpenShift
    @Test
-   public void should_discover_new_cluster_members_when_scaling_up() {
-      scalingTester.testFormingAClusterAfterScalingUp("shared-memory-service-app", hotRodService, commandlineClient, readinessCheck, client, hotRodTester);
+   public void hotrod_should_see_all_pods() throws MalformedURLException {
+      List<Pod> pods = handle.getPodsWithLabel("application", "caching-service-app");
+      hotRodTester.testPodsVisible(hotRodService, pods);
    }
 }

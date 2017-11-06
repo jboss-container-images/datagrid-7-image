@@ -81,7 +81,7 @@ _login_to_openshift:
 
 _add_openshift_push_permissions:
 	oc adm policy add-role-to-user system:registry developer || true
-	oc adm policy add-role-to-user admin developer -n myproject || true
+	oc adm policy add-role-to-user admin developer -n ${_TEST_PROJECT} || true
 	oc adm policy add-role-to-user system:image-builder developer || true
 .PHONY: _add_openshift_push_permissions
 
@@ -91,7 +91,7 @@ push-image-to-local-openshift: _add_openshift_push_permissions _login_to_openshi
 .PHONY: push-image-to-local-openshift
 
 test-functional:
-	$(MVN_COMMAND) clean test -f functional-tests/pom.xml -Dimage=$(_IMAGE)
+	$(MVN_COMMAND) clean test -f functional-tests/pom.xml -Dimage=$(_IMAGE) -Dkubernetes.auth.token=$(shell oc whoami -t)
 .PHONY: test-functional
 
 test-unit:
@@ -154,7 +154,7 @@ clean: clean-docker clean-maven stop-openshift
 test-ci: clean test-unit start-openshift-with-catalog build-image push-image-to-local-openshift test-functional
 .PHONY: test-ci
 
-clean-ci: clean-docker clean-templates-in-helper-namespace stop-openshift #avoid cleaning Maven as we need results to be reported by the job
+clean-ci: clean-docker stop-openshift #avoid cleaning Maven as we need results to be reported by the job
 .PHONY: clean-ci
 
 apb-build:
