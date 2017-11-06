@@ -1,7 +1,7 @@
 #!/bin/sh
 
-USE_OFF_HEAP=${USE_OFF_HEAP:-true}
-XMX_FOR_OFF_HEAP_MB=52
+USE_FIXED_MEMORY_SIZE=${USE_FIXED_MEMORY_SIZE:-true}
+FIXED_MEMORY_XMX=300
 JVM_NATIVE_MB=25
 
 function prepareEnv() {
@@ -9,8 +9,10 @@ function prepareEnv() {
 }
 
 function configure() {
-   if [ ${USE_OFF_HEAP} == "true" ]; then
-       EVICTION_TOTAL_MEMORY_B=$(expr ${CONTAINER_MAX_MEMORY} - ${JVM_NATIVE_MB} * 1000000 - ${XMX_FOR_OFF_HEAP_MB} * 1000000)
+   if [ ${USE_FIXED_MEMORY_SIZE} == "true" ]; then
+       EVICTION_TOTAL_MEMORY_B=$(expr ${CONTAINER_MAX_MEMORY} - ${JVM_NATIVE_MB} * 1000000 - ${FIXED_MEMORY_XMX} * 1000000)
+       # We assume 1k entries (which seems to be wrong idea).
+       EVICTION_TOTAL_MEMORY_B=$(expr ${EVICTION_TOTAL_MEMORY_B})
        export EVICTION_TOTAL_MEMORY_B
    fi
 }
@@ -34,11 +36,7 @@ source_java_run_scripts
 # jvm version).  This would allow for the defaults to be tuned for the version
 # of the jvm being used.
 unsupported_options() {
-    if [[ $($JAVA_HOME/bin/java -version 2>&1 | awk -F "\"" '/version/{ print $2}') == *"1.7"* ]]; then
-        echo "(-XX:NativeMemoryTracking=[^ ]*|-XX:+PrintGCDateStamps|-XX:+UnlockDiagnosticVMOptions|-XX:CICompilerCount=[^ ]*|-XX:GCTimeRatio=[^ ]*|-XX:MaxMetaspaceSize=[^ ]*|-XX:AdaptiveSizePolicyWeight=[^ ]*)"
-    else
-        echo "(--XX:MaxPermSize=[^ ]*)"
-    fi
+    echo "(-XX:NativeMemoryTracking=[^ ]*|-XX:+PrintGCDateStamps|-XX:+UnlockDiagnosticVMOptions|-XX:CICompilerCount=[^ ]*|-XX:GCTimeRatio=[^ ]*|-XX:MaxMetaspaceSize=[^ ]*|-XX:AdaptiveSizePolicyWeight=[^ ]*|-XX:MinHeapFreeRatio=[^ ]*|-XX:MaxHeapFreeRatio=[^ ]*)"
 }
 
 
@@ -52,10 +50,10 @@ adjust_java_options() {
 
     # Off-heap requires a fixed amount of heap memory. The rest is stored off-heap.
     # From our measurements it turned out that 52M is enough.
-    if [ ${USE_OFF_HEAP} == "true" ]; then
+    if [ ${USE_FIXED_MEMORY_SIZE} == "true" ]; then
       java_options=$(echo ${java_options} | sed -e "s/-Xmx[^ ]*/${option}/")
       java_options=$(echo ${java_options} | sed -e "s/-Xms[^ ]*/${option}/")
-      java_options="-Xmx${XMX_FOR_OFF_HEAP_MB}M -Xms${XMX_FOR_OFF_HEAP_MB}M ${java_options}"
+      java_options="-Xmx${FIXED_MEMORY_XMX}M -Xms${FIXED_MEMORY_XMX}M ${java_options}"
     fi
 
     for option in $java_options; do

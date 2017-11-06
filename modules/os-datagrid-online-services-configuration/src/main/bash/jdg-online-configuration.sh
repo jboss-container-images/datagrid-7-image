@@ -1,5 +1,5 @@
 #!/bin/bash
-set -x
+
 echo "params $*"
 
 PROFILE="caching-service"
