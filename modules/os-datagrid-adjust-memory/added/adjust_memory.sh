@@ -12,7 +12,7 @@ function configure() {
    if [ ${USE_FIXED_MEMORY_SIZE} == "true" ]; then
        EVICTION_TOTAL_MEMORY_B=$(expr ${CONTAINER_MAX_MEMORY} - ${JVM_NATIVE_MB} * 1000000 - ${FIXED_MEMORY_XMX} * 1000000)
        # We assume 1k entries (which seems to be wrong idea).
-       EVICTION_TOTAL_MEMORY_B=$(expr ${EVICTION_TOTAL_MEMORY_B})
+       EVICTION_TOTAL_MEMORY_B=$(expr ${EVICTION_TOTAL_MEMORY_B} / 1000)
        export EVICTION_TOTAL_MEMORY_B
    fi
 }
