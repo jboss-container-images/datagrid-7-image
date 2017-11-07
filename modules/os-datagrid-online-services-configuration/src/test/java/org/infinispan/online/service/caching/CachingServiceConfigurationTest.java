@@ -97,8 +97,8 @@ public class CachingServiceConfigurationTest {
 
       XmlAssertion.assertThat(cloudXml)
          .hasXPath("//*[local-name()='distributed-cache' and @name='default']//*[local-name()='memory']")
-         .hasXPath("//*[local-name()='distributed-cache' and @name='default']//*[local-name()='memory']//*[local-name()='object']")
-         .hasXPath("//*[local-name()='distributed-cache' and @name='default']//*[local-name()='memory']//*[local-name()='object' and @size='1']");
+         .hasXPath("//*[local-name()='distributed-cache' and @name='default']//*[local-name()='memory']//*[local-name()='off-heap']")
+         .hasXPath("//*[local-name()='distributed-cache' and @name='default']//*[local-name()='memory']//*[local-name()='off-heap' and @eviction='MEMORY' and @size='1']");
    }
 
    @Test

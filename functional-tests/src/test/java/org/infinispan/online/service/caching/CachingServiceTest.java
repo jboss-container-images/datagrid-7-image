@@ -47,7 +47,6 @@ public class CachingServiceTest {
    }
 
    @Test
-   @Ignore("This test will eventually blow up. We are still tuning off-heap parameters")
    public void should_not_blow_up_because_of_oom() {
       hotRodTester.testPutPerformance(hotRodService, 60, TimeUnit.SECONDS);
    }

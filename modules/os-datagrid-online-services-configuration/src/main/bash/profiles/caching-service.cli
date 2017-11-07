@@ -8,6 +8,6 @@ if (outcome == success) of /subsystem=datagrid-infinispan-endpoint/rest-connecto
    /subsystem=datagrid-infinispan-endpoint/rest-connector=rest-connector/authentication=AUTHENTICATION:remove
 end-if
 
-/subsystem=datagrid-infinispan/cache-container=clustered/configurations=CONFIGURATIONS/distributed-cache-configuration=default/memory=OBJECT:add(size=$eviction_total_memory_bytes)
+/subsystem=datagrid-infinispan/cache-container=clustered/configurations=CONFIGURATIONS/distributed-cache-configuration=default/memory=OFF-HEAP:add(size=$eviction_total_memory_bytes, eviction=MEMORY)
 
 stop-embedded-server
