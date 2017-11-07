@@ -3,6 +3,9 @@
 echo "---- Printing out test resources ----"
 oc get all,secrets,sa,templates,configmaps,daemonsets,clusterroles,rolebindings,serviceaccounts
 
+echo "---- Docker PS ----"
+docker ps
+
 echo "---- Clearing up test resources ---"
 oc delete all,secrets,sa,templates,configmaps,daemonsets,clusterroles,rolebindings,serviceaccounts --selector=template=caching-service || true
 oc delete all,secrets,sa,templates,configmaps,daemonsets,clusterroles,rolebindings,serviceaccounts --selector=template=shared-memory-service || true
