@@ -243,8 +243,8 @@
                               ]
                            },
                            "initialDelaySeconds": 5,
-                           "timeoutSeconds": 25,
-                           "periodSeconds": 30,
+                           "timeoutSeconds": 10,
+                           "periodSeconds": 20,
                            "successThreshold": 1,
                            "failureThreshold": 5
                         },
@@ -254,9 +254,9 @@
                                  "/opt/datagrid/bin/readinessProbe.sh"
                               ]
                            },
-                           "initialDelaySeconds": 5,
-                           "timeoutSeconds": 25,
-                           "periodSeconds": 30,
+                           "initialDelaySeconds": 7,
+                           "timeoutSeconds": 10,
+                           "periodSeconds": 20,
                            "successThreshold": 2,
                            "failureThreshold": 5
                         },
