@@ -125,6 +125,20 @@ public class CachingServiceConfigurationTest {
          .hasXPath("//*[local-name()='distributed-cache-configuration' and @name='caching-service']")
          .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='shared-memory-service']")
          .hasXPath("//*[local-name()='distributed-cache' and @name='default' and @configuration='caching-service']")
-         .hasXPath("//*[local-name()='distributed-cache' and @name='memcachedCache' and @configuration='caching-service']");
+         .hasXPath("//*[local-name()='distributed-cache' and @name='memcachedCache' and @configuration='caching-service']")
+         .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='async']")
+         .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='indexed']")
+         .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='memory-bounded']")
+         .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='persistent-file-store-passivation']")
+         .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='persistent-file-store']")
+         .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='persistent-file-store-write-behind']")
+         .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='persistent-jdbc-binary-keyed']")
+         .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='persistent-jdbc-string-keyed']")
+         .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='persistent-leveldb-store']")
+         .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='transactional']");
+//  https://issues.jboss.org/browse/ISPN-8341
+//         .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='default']")
+//         .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='memcachedCache']");
    }
+
 }
