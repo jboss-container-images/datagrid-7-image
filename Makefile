@@ -96,7 +96,7 @@ test-functional:
 
 test-unit:
 	$(MVN_COMMAND) clean test -f modules/os-datagrid-online-services-configuration/pom.xml
-.PHONY: test-functional
+.PHONY: test-unit
 
 _relist-template-service-broker:
 	# This one is very hacky - the idea is to increase the relist request counter by 1. This way we ask the Template
@@ -151,7 +151,7 @@ clean-docker:
 clean: clean-docker clean-maven stop-openshift
 .PHONY: clean
 
-test-ci: test-unit start-openshift-with-catalog build-image push-image-to-local-openshift test-functional clean
+test-ci: clean test-unit start-openshift-with-catalog build-image push-image-to-local-openshift test-functional clean
 .PHONY: test-ci
 
 apb-build:
