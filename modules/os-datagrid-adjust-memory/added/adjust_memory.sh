@@ -2,7 +2,7 @@
 
 USE_FIXED_MEMORY_SIZE=${USE_FIXED_MEMORY_SIZE:-true}
 
-FIXED_MEMORY_XMX=80
+FIXED_MEMORY_XMX=400
 JVM_NATIVE_MB=260
 
 function prepareEnv() {
@@ -35,7 +35,7 @@ source_java_run_scripts
 # jvm version).  This would allow for the defaults to be tuned for the version
 # of the jvm being used.
 unsupported_options() {
-    echo "(-XX:NativeMemoryTracking=[^ ]*|-XX:+PrintGCDateStamps|-XX:+UnlockDiagnosticVMOptions|-XX:CICompilerCount=[^ ]*|-XX:GCTimeRatio=[^ ]*|-XX:MaxMetaspaceSize=[^ ]*|-XX:AdaptiveSizePolicyWeight=[^ ]*|-XX:MinHeapFreeRatio=[^ ]*|-XX:MaxHeapFreeRatio=[^ ]*)"
+    echo "(-XX:CICompilerCount=[^ ]*|-XX:GCTimeRatio=[^ ]*|-XX:MaxMetaspaceSize=[^ ]*|-XX:AdaptiveSizePolicyWeight=[^ ]*|-XX:MinHeapFreeRatio=[^ ]*|-XX:MaxHeapFreeRatio=[^ ]*)"
 }
 
 
