@@ -4,6 +4,10 @@ if (outcome == success) of /subsystem=datagrid-infinispan/cache-container=cluste
    /subsystem=datagrid-infinispan/cache-container=clustered/configurations=CONFIGURATIONS/distributed-cache-configuration=caching-service:remove
 end-if
 
+if (result != $num_owners) of /subsystem=datagrid-infinispan/cache-container=clustered/configurations=CONFIGURATIONS/distributed-cache-configuration=shared-memory-service:read-attribute(name=owners)
+   /subsystem=datagrid-infinispan/cache-container=clustered/configurations=CONFIGURATIONS/distributed-cache-configuration=shared-memory-service:write-attribute(name=owners, value=$num_owners)
+end-if
+
 /subsystem=datagrid-infinispan/cache-container=clustered/distributed-cache=default:write-attribute(name=configuration, value=shared-memory-service)
 /subsystem=datagrid-infinispan/cache-container=clustered/distributed-cache=memcachedCache:write-attribute(name=configuration, value=shared-memory-service)
 

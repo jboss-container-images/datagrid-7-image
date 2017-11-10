@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.Map;
 
+import org.assertj.core.util.Maps;
 import org.infinispan.online.service.caching.assertions.ResultAssertion;
 import org.infinispan.online.service.caching.assertions.XmlAssertion;
 import org.infinispan.online.service.caching.util.ConfigurationScriptInvoker;
@@ -22,6 +24,8 @@ public class SharedMemoryServiceConfigurationTest {
    Path servicesXml = testServerLocator.locateServer().resolve("standalone/configuration/services.xml");
    Path jbossHome = testServerLocator.locateServer();
 
+   Map<String, String> requiredScriptParameters = Maps.newHashMap("num_owners", "3");
+
    @Before
    public void beforeTest() throws IOException {
       Path baselineConfiguration = testResourceLocator.locateFile("caching-service/services-7.2.xml");
@@ -31,7 +35,7 @@ public class SharedMemoryServiceConfigurationTest {
    @Test
    public void should_leave_all_endpoints() {
      //when
-      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "shared-memory-service");
+      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "shared-memory-service", requiredScriptParameters);
 
       //then
       ResultAssertion.assertThat(result).printResult().isOk();
@@ -43,7 +47,7 @@ public class SharedMemoryServiceConfigurationTest {
    @Test
    public void should_add_kube_ping() {
       //when
-      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "shared-memory-service");
+      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "shared-memory-service", requiredScriptParameters);
 
       //then
       ResultAssertion.assertThat(result).printResult().isOk();
@@ -64,9 +68,20 @@ public class SharedMemoryServiceConfigurationTest {
    }
 
    @Test
+   public void should_fail_if_num_owners_not_configured() {
+      // when
+      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "shared-memory-service", requiredScriptParameters);
+
+      //then
+      ResultAssertion.assertThat(result).printResult().isOk();
+      XmlAssertion.assertThat(servicesXml)
+         .hasXPath("//*[local-name()='distributed-cache-configuration' and @name='shared-memory-service' and @owners='3']");
+   }
+
+   @Test
    public void should_adjust_configuration_templates() {
       //when
-      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "shared-memory-service");
+      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "shared-memory-service", requiredScriptParameters);
 
       //then
       ResultAssertion.assertThat(result).printResult().isOk();
