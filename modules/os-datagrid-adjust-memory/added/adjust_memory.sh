@@ -2,8 +2,9 @@
 
 USE_FIXED_MEMORY_SIZE=${USE_FIXED_MEMORY_SIZE:-true}
 
-FIXED_MEMORY_XMX=400
-JVM_NATIVE_MB=260
+FIXED_MEMORY_XMX=100
+JVM_NATIVE_MB=220
+FIXED_THREAD_STACK_XSS=228
 
 function prepareEnv() {
   unset EVICTION_TOTAL_MEMORY_B
@@ -35,16 +36,20 @@ source_java_run_scripts
 # jvm version).  This would allow for the defaults to be tuned for the version
 # of the jvm being used.
 unsupported_options() {
-    echo "(-XX:CICompilerCount=[^ ]*|-XX:GCTimeRatio=[^ ]*|-XX:MaxMetaspaceSize=[^ ]*|-XX:AdaptiveSizePolicyWeight=[^ ]*|-XX:MinHeapFreeRatio=[^ ]*|-XX:MaxHeapFreeRatio=[^ ]*)"
+    echo "(-XX:\+UseParallelGC|-XX:CICompilerCount=[^ ]*|-XX:GCTimeRatio=[^ ]*|-XX:MaxMetaspaceSize=[^ ]*|-XX:AdaptiveSizePolicyWeight=[^ ]*|-XX:MinHeapFreeRatio=[^ ]*|-XX:MaxHeapFreeRatio=[^ ]*)"
 }
 
+additional_options() {
+    echo "-Dsun.zip.disableMemoryMapping=true -Xss${FIXED_THREAD_STACK_XSS}k -XX:+UseSerialGC -XX:MinHeapFreeRatio=5 -XX:MaxHeapFreeRatio=10 -XX:+UseSerialGC"
+}
 
 # Merge default java options into the passed argument
 adjust_java_options() {
+    set -x
     local options="$@"
     local remove_xms
     local java_scripts_dir="/opt/run-java"
-    local java_options=$(source "${java_scripts_dir}/java-default-options")
+    local java_options="$(source "${java_scripts_dir}/java-default-options") $(additional_options)"
     local unsupported="$(unsupported_options)"
 
     # Off-heap requires a fixed amount of heap memory. The rest is stored off-heap.
