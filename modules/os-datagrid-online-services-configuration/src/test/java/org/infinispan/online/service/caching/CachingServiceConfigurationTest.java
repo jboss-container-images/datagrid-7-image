@@ -21,15 +21,15 @@ public class CachingServiceConfigurationTest {
    ConfigurationScriptInvoker configurationScriptInvoker = new ConfigurationScriptInvoker();
    TestResourceLocator testResourceLocator = new TestResourceLocator();
 
-   Path cloudXml = testServerLocator.locateServer().resolve("standalone/configuration/cloud.xml");
+   Path servicesXml = testServerLocator.locateServer().resolve("standalone/configuration/services.xml");
    Path jbossHome = testServerLocator.locateServer();
 
    Map<String, String> requiredScriptParameters = Maps.newHashMap("eviction_total_memory_bytes", "1");
 
    @Before
    public void beforeTest() throws IOException {
-      Path baselineConfiguration = testResourceLocator.locateFile("caching-service/cloud-7.2.xml");
-      Files.copy(baselineConfiguration, cloudXml, StandardCopyOption.REPLACE_EXISTING);
+      Path baselineConfiguration = testResourceLocator.locateFile("caching-service/services-7.2.xml");
+      Files.copy(baselineConfiguration, servicesXml, StandardCopyOption.REPLACE_EXISTING);
    }
 
    @Test
@@ -48,9 +48,9 @@ public class CachingServiceConfigurationTest {
 
       //then
       ResultAssertion.assertThat(result).printResult().isOk();
-      XmlAssertion.assertThat(cloudXml).hasXPath("//*[local-name()='memcached-connector']");
-      XmlAssertion.assertThat(cloudXml).hasXPath("//*[local-name()='rest-connector']");
-      XmlAssertion.assertThat(cloudXml).hasXPath("//*[local-name()='hotrod-connector']");
+      XmlAssertion.assertThat(servicesXml).hasXPath("//*[local-name()='memcached-connector']");
+      XmlAssertion.assertThat(servicesXml).hasXPath("//*[local-name()='rest-connector']");
+      XmlAssertion.assertThat(servicesXml).hasXPath("//*[local-name()='hotrod-connector']");
    }
 
    @Test
@@ -61,7 +61,7 @@ public class CachingServiceConfigurationTest {
       //then
       ResultAssertion.assertThat(result).printResult().isOk();
 
-      XmlAssertion.assertThat(cloudXml)
+      XmlAssertion.assertThat(servicesXml)
       .hasXPath("//*[local-name()='stack' and @name='kubernetes']")
       .hasXPath("//*[local-name()='transport' and @type='TCP']")
       .hasXPath("//*[local-name()='protocol' and @type='kubernetes.KUBE_PING']")
@@ -84,7 +84,8 @@ public class CachingServiceConfigurationTest {
       //then
       ResultAssertion.assertThat(result).printResult().isOk();
 
-      XmlAssertion.assertThat(cloudXml).hasXPath("//*[local-name()='distributed-cache' and @name='default' and @owners='1']");
+      XmlAssertion.assertThat(servicesXml)
+         .hasXPath("//*[local-name()='distributed-cache-configuration' and @name='caching-service' and @owners='1']");
    }
 
    @Test
@@ -95,10 +96,10 @@ public class CachingServiceConfigurationTest {
       //then
       ResultAssertion.assertThat(result).printResult().isOk();
 
-      XmlAssertion.assertThat(cloudXml)
-         .hasXPath("//*[local-name()='distributed-cache' and @name='default']//*[local-name()='memory']")
-         .hasXPath("//*[local-name()='distributed-cache' and @name='default']//*[local-name()='memory']//*[local-name()='off-heap']")
-         .hasXPath("//*[local-name()='distributed-cache' and @name='default']//*[local-name()='memory']//*[local-name()='off-heap' and @eviction='MEMORY' and @size='1']");
+      XmlAssertion.assertThat(servicesXml)
+         .hasXPath("//*[local-name()='distributed-cache-configuration' and @name='caching-service']//*[local-name()='memory']")
+         .hasXPath("//*[local-name()='distributed-cache-configuration' and @name='caching-service']//*[local-name()='memory']//*[local-name()='off-heap']")
+         .hasXPath("//*[local-name()='distributed-cache-configuration' and @name='caching-service']//*[local-name()='memory']//*[local-name()='off-heap' and @eviction='MEMORY' and @size='1']");
    }
 
    @Test
@@ -109,6 +110,21 @@ public class CachingServiceConfigurationTest {
       //then
       ResultAssertion.assertThat(result).printResult().isOk();
 
-      XmlAssertion.assertThat(cloudXml).hasNoXPath("//*[local-name()='rest-connector']//*[local-name()='authentication']");
+      XmlAssertion.assertThat(servicesXml).hasNoXPath("//*[local-name()='rest-connector']//*[local-name()='authentication']");
+   }
+
+   @Test
+   public void should_adjust_configuration_templates() {
+      //when
+      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "caching-service", requiredScriptParameters);
+
+      //then
+      ResultAssertion.assertThat(result).printResult().isOk();
+
+      XmlAssertion.assertThat(servicesXml)
+         .hasXPath("//*[local-name()='distributed-cache-configuration' and @name='caching-service']")
+         .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='shared-memory-service']")
+         .hasXPath("//*[local-name()='distributed-cache' and @name='default' and @configuration='caching-service']")
+         .hasXPath("//*[local-name()='distributed-cache' and @name='memcachedCache' and @configuration='caching-service']");
    }
 }

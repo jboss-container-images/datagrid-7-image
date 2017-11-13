@@ -233,6 +233,10 @@
                            {
                               "name": "APP_PASS",
                               "value": "${APPLICATION_PASSWORD}"
+                           },
+                           {
+                               "name": "NUMBER_OF_OWNERS",
+                               "value": "${NUMBER_OF_OWNERS}"
                            }
                         ],
                         "image": "${IMAGE}",
@@ -354,6 +358,12 @@
          "name": "NUMBER_OF_INSTANCES",
          "required": true,
          "value": "1"
-      }
+      },
+      {
+        "description": "Number of replicas for each cache entry in the cluster.",
+        "name": "NUMBER_OF_OWNERS",
+        "required": false,
+        "value": "2"
+     }
    ]
 }

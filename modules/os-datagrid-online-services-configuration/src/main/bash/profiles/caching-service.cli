@@ -1,14 +1,17 @@
-embed-server --server-config=cloud.xml --std-out=echo
-
-if (result != 1) of /subsystem=datagrid-infinispan/cache-container=clustered/configurations=CONFIGURATIONS/distributed-cache-configuration=default:read-attribute(name=owners)
-   /subsystem=datagrid-infinispan/cache-container=clustered/configurations=CONFIGURATIONS/distributed-cache-configuration=default:write-attribute(name=owners, value=1)
-end-if
+embed-server --server-config=services.xml --std-out=echo
 
 if (outcome == success) of /subsystem=datagrid-infinispan-endpoint/rest-connector=rest-connector/authentication=AUTHENTICATION:read-resource
    /subsystem=datagrid-infinispan-endpoint/rest-connector=rest-connector/authentication=AUTHENTICATION:remove
 end-if
 
-/subsystem=datagrid-infinispan/cache-container=clustered/configurations=CONFIGURATIONS/distributed-cache-configuration=default/memory=OFF-HEAP:add(size=$eviction_total_memory_bytes, eviction=MEMORY)
+if (outcome == success) of /subsystem=datagrid-infinispan/cache-container=clustered/configurations=CONFIGURATIONS/distributed-cache-configuration=shared-memory-service:read-resource
+   /subsystem=datagrid-infinispan/cache-container=clustered/configurations=CONFIGURATIONS/distributed-cache-configuration=shared-memory-service:remove
+end-if
+
+/subsystem=datagrid-infinispan/cache-container=clustered/configurations=CONFIGURATIONS/distributed-cache-configuration=caching-service/memory=OFF-HEAP:add(size=$eviction_total_memory_bytes, eviction=MEMORY)
+
+/subsystem=datagrid-infinispan/cache-container=clustered/distributed-cache=default:write-attribute(name=configuration, value=caching-service)
+/subsystem=datagrid-infinispan/cache-container=clustered/distributed-cache=memcachedCache:write-attribute(name=configuration, value=caching-service)
 
 # Below settings were introduced to tune performance. Once we confirm them, we will add some tests.
 /subsystem=datagrid-infinispan/cache-container=clustered/thread-pool=transport:write-attribute(name=min-threads, value=1)
