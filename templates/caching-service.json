@@ -8,7 +8,7 @@
       "annotations": {
          "openshift.io/display-name": "Red Hat JBoss Data Grid Caching Service",
          "description": "Red Hat JBoss Data Grid Caching Service for Openshift",
-         "iconClass": "icon-infinispan",
+         "iconClass": "icon-datagrid",
          "tags": "java,database,datagrid,jboss",
          "template.openshift.io/documentation-url": "https://www.redhat.com/en/technologies/jboss-middleware/data-grid",
          "template.openshift.io/long-description": "Provides a standalone JBoss Data Grid Caching Service (a high performance, scalable, key/value data grid solution) without persistence (in other words your data will be lost upon restart).",
