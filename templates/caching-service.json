@@ -237,11 +237,11 @@
                         "resources": {
                            "requests": {
                               "cpu": "0.5",
-                              "memory": "512Mi"
+                              "memory": "${TOTAL_CONTAINER_MEM}Mi"
                            },
                            "limits": {
                               "cpu": "0.5",
-                              "memory": "512Mi"
+                              "memory": "${TOTAL_CONTAINER_MEM}Mi"
                            }
                         }
                      }
@@ -282,6 +282,12 @@
          "name": "NUMBER_OF_INSTANCES",
          "required": true,
          "value": "1"
+      },
+      {
+         "description": "Total container memory in MiB.",
+         "name": "TOTAL_CONTAINER_MEM",
+         "required": false,
+         "value": "512"
       }
    ]
 }
