@@ -3,8 +3,9 @@
 USE_FIXED_MEMORY_SIZE=${USE_FIXED_MEMORY_SIZE:-true}
 
 FIXED_MEMORY_XMX=100
-JVM_NATIVE_MB=220
-FIXED_THREAD_STACK_XSS=228
+JVM_NATIVE_MB=200
+MAX_RAM=$(expr ${JVM_NATIVE_MB} + ${FIXED_MEMORY_XMX})
+JVM_NATIVE_PERCENTAGE_OVERHEAD=30
 
 function prepareEnv() {
   unset EVICTION_TOTAL_MEMORY_B
@@ -12,7 +13,11 @@ function prepareEnv() {
 
 function configure() {
    if [ ${USE_FIXED_MEMORY_SIZE} == "true" ]; then
-       EVICTION_TOTAL_MEMORY_B=$(expr ${CONTAINER_MAX_MEMORY} - ${JVM_NATIVE_MB} * 1000000 - ${FIXED_MEMORY_XMX} * 1000000)
+       NATIVE_MEMORY_PERCENTAGE_OVERHEAD=$(expr ${CONTAINER_MAX_MEMORY} * ${JVM_NATIVE_PERCENTAGE_OVERHEAD} / 100)
+       EVICTION_TOTAL_MEMORY_B=$(expr ${CONTAINER_MAX_MEMORY} - ${JVM_NATIVE_MB} * 1024 * 1024 - ${FIXED_MEMORY_XMX} * 1024 * 1024 - ${NATIVE_MEMORY_PERCENTAGE_OVERHEAD})
+       echo "CONTAINER MEM: ${CONTAINER_MAX_MEMORY}"
+       echo "EVICTION_TOTAL_MEMORY_B: ${EVICTION_TOTAL_MEMORY_B}"
+       echo "NATIVE_MEMORY_PERCENTAGE_OVERHEAD: ${NATIVE_MEMORY_PERCENTAGE_OVERHEAD}"
        export EVICTION_TOTAL_MEMORY_B
    fi
 }
@@ -26,6 +31,8 @@ function source_java_run_scripts() {
 }
 
 source_java_run_scripts
+prepareEnv
+configure
 
 # Returns a set of options that are not supported by the current jvm.  The idea
 # is that java-default-options always configures settings for the latest jvm.
@@ -40,12 +47,11 @@ unsupported_options() {
 }
 
 additional_options() {
-    echo "-Dsun.zip.disableMemoryMapping=true -Xss${FIXED_THREAD_STACK_XSS}k -XX:+UseSerialGC -XX:MinHeapFreeRatio=5 -XX:MaxHeapFreeRatio=10 -XX:+UseSerialGC"
+    echo "-Dsun.zip.disableMemoryMapping=true -XX:+UseSerialGC -XX:MinHeapFreeRatio=5 -XX:MaxHeapFreeRatio=10 -XX:+UseSerialGC"
 }
 
 # Merge default java options into the passed argument
 adjust_java_options() {
-    set -x
     local options="$@"
     local remove_xms
     local java_scripts_dir="/opt/run-java"
@@ -57,7 +63,7 @@ adjust_java_options() {
     if [ ${USE_FIXED_MEMORY_SIZE} == "true" ]; then
       java_options=$(echo ${java_options} | sed -e "s/-Xmx[^ ]*/${option}/")
       java_options=$(echo ${java_options} | sed -e "s/-Xms[^ ]*/${option}/")
-      java_options="-Xmx${FIXED_MEMORY_XMX}M -Xms${FIXED_MEMORY_XMX}M ${java_options}"
+      java_options="-Xmx${FIXED_MEMORY_XMX}M -Xms${FIXED_MEMORY_XMX}M -XX:MaxRAM=${MAX_RAM}M ${java_options}"
     fi
 
     for option in $java_options; do
