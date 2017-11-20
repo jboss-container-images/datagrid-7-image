@@ -35,6 +35,24 @@ function flush_additional_properties_to_file() {
    fi
 }
 
+function add_user() {
+   role=${1}
+   user="${role}_USER"
+   pass="${role}_USER_PASSWORD"
+   if [ -z ${!user} ]; then
+       echo "${user} param must be set"
+       exit 1
+   fi
+
+   if [ -z ${!pass} ]; then
+       echo "${pass} param must be set"
+       exit 1
+   fi
+
+   realm=$([ "${role}" == "APPLICATION" ] && echo "-a")
+   $JBOSS_HOME/bin/add-user.sh ${realm} -u ${!user} -p ${!pass}
+}
+
 ADDITIONAL_PARAMETERS=()
 while [[ $# -gt 0 ]]
 do
@@ -68,6 +86,7 @@ set -- "${ADDITIONAL_PARAMETERS[@]}"
 check_if_profile_exists
 check_if_cli_exists
 flush_additional_properties_to_file
+add_user "APPLICATION"
 
 $JBOSS_HOME/bin/cli.sh --file="${PROFILES_DIRECTORY}/${PROFILE}.cli"
 

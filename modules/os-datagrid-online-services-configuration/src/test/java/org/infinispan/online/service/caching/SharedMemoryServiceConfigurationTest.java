@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.assertj.core.util.Maps;
@@ -25,6 +26,13 @@ public class SharedMemoryServiceConfigurationTest {
    Path jbossHome = testServerLocator.locateServer();
 
    Map<String, String> requiredScriptParameters = Maps.newHashMap("num_owners", "3");
+   Map<String, String> requiredEnvVars = new HashMap<>();
+
+   public SharedMemoryServiceConfigurationTest() {
+      requiredEnvVars.put("APPLICATION_USER", "test");
+      requiredEnvVars.put("APPLICATION_USER_PASSWORD", "test");
+   }
+
 
    @Before
    public void beforeTest() throws IOException {
@@ -35,7 +43,7 @@ public class SharedMemoryServiceConfigurationTest {
    @Test
    public void should_leave_all_endpoints() {
      //when
-      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "shared-memory-service", requiredScriptParameters);
+      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "shared-memory-service", requiredScriptParameters, requiredEnvVars);
 
       //then
       ResultAssertion.assertThat(result).printResult().isOk();
@@ -47,7 +55,7 @@ public class SharedMemoryServiceConfigurationTest {
    @Test
    public void should_add_kube_ping() {
       //when
-      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "shared-memory-service", requiredScriptParameters);
+      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "shared-memory-service", requiredScriptParameters, requiredEnvVars);
 
       //then
       ResultAssertion.assertThat(result).printResult().isOk();
@@ -70,7 +78,7 @@ public class SharedMemoryServiceConfigurationTest {
    @Test
    public void should_fail_if_num_owners_not_configured() {
       // when
-      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "shared-memory-service", requiredScriptParameters);
+      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "shared-memory-service", requiredScriptParameters, requiredEnvVars);
 
       //then
       ResultAssertion.assertThat(result).printResult().isOk();
@@ -79,9 +87,31 @@ public class SharedMemoryServiceConfigurationTest {
    }
 
    @Test
+   public void should_fail_if_no_user_is_specified() {
+      Map<String, String> envVariables = new HashMap<>(requiredEnvVars);
+      envVariables.remove("APPLICATION_USER");
+      //when
+      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "caching-service", requiredScriptParameters, envVariables);
+
+      //then
+      ResultAssertion.assertThat(result).printResult().isFailed();
+   }
+
+   @Test
+   public void should_fail_if_no_user_password_is_specified() {
+      Map<String, String> envVariables = new HashMap<>(requiredEnvVars);
+      envVariables.remove("APPLICATION_USER_PASSWORD");
+      //when
+      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "caching-service", requiredScriptParameters, envVariables);
+
+      //then
+      ResultAssertion.assertThat(result).printResult().isFailed();
+   }
+
+   @Test
    public void should_adjust_configuration_templates() {
       //when
-      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "shared-memory-service", requiredScriptParameters);
+      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "shared-memory-service", requiredScriptParameters, requiredEnvVars);
 
       //then
       ResultAssertion.assertThat(result).printResult().isOk();

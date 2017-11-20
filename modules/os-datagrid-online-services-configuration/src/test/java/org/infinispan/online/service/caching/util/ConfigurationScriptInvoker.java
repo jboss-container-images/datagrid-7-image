@@ -6,7 +6,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -30,11 +29,7 @@ public class ConfigurationScriptInvoker {
       }
    }
 
-   public Result invokeScript(Path cli, String profile) {
-      return invokeScript(cli, profile, Collections.emptyMap());
-   }
-
-   public Result invokeScript(Path jbossHome, String profile, Map<String, String> parameters) {
+   public Result invokeScript(Path jbossHome, String profile, Map<String, String> parameters, Map<String, String> envVariables) {
       Path script = Paths.get(".", "src/main/bash/jdg-online-configuration.sh");
       Path profiles = Paths.get(".", "src/main/bash/profiles");
       if (!Files.exists(script)) {
@@ -52,7 +47,10 @@ public class ConfigurationScriptInvoker {
       parameters.forEach((k, v) -> command.add(k + "=" + v));
 
       try {
-         Process p = new ProcessBuilder(command).start();
+         ProcessBuilder pb = new ProcessBuilder(command);
+         pb.environment().putAll(envVariables);
+
+         Process p = pb.start();
          int resultCode = p.waitFor();
          BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
 

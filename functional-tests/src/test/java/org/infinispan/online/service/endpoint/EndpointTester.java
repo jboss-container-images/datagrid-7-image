@@ -9,4 +9,5 @@ public interface EndpointTester {
 
    void testPutPerformance(URL urlToService, long timeout, TimeUnit timeUnit);
 
+   void testIfEndpointIsProtected(URL urlToService);
 }

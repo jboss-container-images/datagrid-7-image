@@ -7,6 +7,8 @@ import java.util.concurrent.TimeUnit;
 
 import static io.restassured.RestAssured.given;
 
+import io.restassured.specification.RequestSpecification;
+
 
 public class RESTTester implements EndpointTester {
 
@@ -26,11 +28,19 @@ public class RESTTester implements EndpointTester {
    }
 
    public void testIfEndpointIsProtected(URL urlToService) {
-      post(urlToService.toString() + "rest/default/should_default_cache_be_accessible_via_REST", "test", 401);
+      post(urlToService.toString() + "rest/default/should_default_cache_be_accessible_via_REST", "test", 401, false);
    }
 
-   protected void post(String url, String body, int expectedCode) {
-      given()
+   private void post(String url, String body, int expectedCode) {
+      post(url, body, expectedCode, true);
+   }
+
+   private void post(String url, String body, int expectedCode, boolean authenticate) {
+      RequestSpecification spec = given();
+      if (authenticate)
+         spec = spec.auth().basic("test", "test");
+
+      spec
          .body(body)
       .when()
          .post(url)
