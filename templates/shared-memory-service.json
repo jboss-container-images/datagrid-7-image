@@ -26,6 +26,17 @@
          }
       },
       {
+         "kind": "Secret",
+         "apiVersion": "v1",
+         "metadata": {
+            "name": "${APPLICATION_NAME}"
+         },
+         "stringData" : {
+            "application-user" : "${APPLICATION_USER}",
+            "application-password" : "${APPLICATION_USER_PASSWORD}"
+         }
+      },
+      {
          "kind": "RoleBinding",
          "apiVersion": "v1",
          "metadata": {
@@ -219,20 +230,22 @@
                               }
                            },
                            {
-                              "name": "MGMT_USER",
-                              "value": "${MANAGEMENT_USER}"
+                              "name": "APPLICATION_USER",
+                              "valueFrom": {
+                                 "secretKeyRef" : {
+                                    "name" : "${APPLICATION_NAME}",
+                                    "key" : "application-user"
+                                 }
+                              }
                            },
                            {
-                              "name": "MGMT_PASS",
-                              "value": "${MANAGEMENT_PASSWORD}"
-                           },
-                           {
-                              "name": "APP_USER",
-                              "value": "${APPLICATION_USER}"
-                           },
-                           {
-                              "name": "APP_PASS",
-                              "value": "${APPLICATION_PASSWORD}"
+                              "name": "APPLICATION_USER_PASSWORD",
+                              "valueFrom": {
+                                 "secretKeyRef" : {
+                                    "name" : "${APPLICATION_NAME}",
+                                    "key" : "application-password"
+                                 }
+                              }
                            },
                            {
                                "name": "NUMBER_OF_OWNERS",
@@ -370,6 +383,19 @@
          "name": "TOTAL_CONTAINER_MEM",
          "required": false,
          "value": "512"
+      },
+      {
+         "name": "APPLICATION_USER",
+         "displayName": "Client User",
+         "description": "Username for client applications",
+         "required": true
+      },
+      {
+         "name": "APPLICATION_USER_PASSWORD",
+         "displayName": "Client Password",
+         "description": "Password for client applications",
+         "generate": "expression",
+         "from": "[a-zA-Z0-9]{16}"
       }
    ]
 }

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.assertj.core.util.Maps;
@@ -25,6 +26,12 @@ public class CachingServiceConfigurationTest {
    Path jbossHome = testServerLocator.locateServer();
 
    Map<String, String> requiredScriptParameters = Maps.newHashMap("eviction_total_memory_bytes", "1");
+   Map<String, String> requiredEnvVars = new HashMap<>();
+
+   public CachingServiceConfigurationTest() {
+      requiredEnvVars.put("APPLICATION_USER", "test");
+      requiredEnvVars.put("APPLICATION_USER_PASSWORD", "test");
+   }
 
    @Before
    public void beforeTest() throws IOException {
@@ -35,7 +42,29 @@ public class CachingServiceConfigurationTest {
    @Test
    public void should_fail_if_no_eviction_total_memory_bytes_is_specified() {
       //when
-      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "caching-service");
+      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "caching-service", new HashMap<>(), requiredEnvVars);
+
+      //then
+      ResultAssertion.assertThat(result).printResult().isFailed();
+   }
+
+   @Test
+   public void should_fail_if_no_user_is_specified() {
+      Map<String, String> envVariables = new HashMap<>(requiredEnvVars);
+      envVariables.remove("APPLICATION_USER");
+      //when
+      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "caching-service", requiredScriptParameters, envVariables);
+
+      //then
+      ResultAssertion.assertThat(result).printResult().isFailed();
+   }
+
+   @Test
+   public void should_fail_if_no_user_password_is_specified() {
+      Map<String, String> envVariables = new HashMap<>(requiredEnvVars);
+      envVariables.remove("APPLICATION_USER_PASSWORD");
+      //when
+      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "caching-service", requiredScriptParameters, envVariables);
 
       //then
       ResultAssertion.assertThat(result).printResult().isFailed();
@@ -44,7 +73,7 @@ public class CachingServiceConfigurationTest {
    @Test
    public void should_leave_all_endpoints() {
      //when
-      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "caching-service", requiredScriptParameters);
+      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "caching-service", requiredScriptParameters, requiredEnvVars);
 
       //then
       ResultAssertion.assertThat(result).printResult().isOk();
@@ -56,7 +85,7 @@ public class CachingServiceConfigurationTest {
    @Test
    public void should_add_kube_ping() {
       //when
-      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "caching-service", requiredScriptParameters);
+      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "caching-service", requiredScriptParameters, requiredEnvVars);
 
       //then
       ResultAssertion.assertThat(result).printResult().isOk();
@@ -79,7 +108,7 @@ public class CachingServiceConfigurationTest {
    @Test
    public void should_modify_default_cache_to_num_of_owners_1() {
       //when
-      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "caching-service", requiredScriptParameters);
+      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "caching-service", requiredScriptParameters, requiredEnvVars);
 
       //then
       ResultAssertion.assertThat(result).printResult().isOk();
@@ -91,7 +120,7 @@ public class CachingServiceConfigurationTest {
    @Test
    public void should_add_off_heap_with_eviction() {
       //when
-      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "caching-service", requiredScriptParameters);
+      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "caching-service", requiredScriptParameters, requiredEnvVars);
 
       //then
       ResultAssertion.assertThat(result).printResult().isOk();
@@ -103,20 +132,35 @@ public class CachingServiceConfigurationTest {
    }
 
    @Test
-   public void should_remove_authentication_from_rest() {
+   public void should_have_auth_rest() {
       //when
-      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "caching-service", requiredScriptParameters);
+      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "caching-service", requiredScriptParameters, requiredEnvVars);
 
       //then
       ResultAssertion.assertThat(result).printResult().isOk();
 
-      XmlAssertion.assertThat(servicesXml).hasNoXPath("//*[local-name()='rest-connector']//*[local-name()='authentication']");
+      XmlAssertion.assertThat(servicesXml)
+         .hasXPath("//*[local-name()='rest-connector']//*[local-name()='authentication' and @auth-method='BASIC' and @security-realm='ApplicationRealm']");
+   }
+
+   @Test
+   public void should_have_auth_hotrod() {
+      //when
+      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "caching-service", requiredScriptParameters, requiredEnvVars);
+
+      //then
+      ResultAssertion.assertThat(result).printResult().isOk();
+
+      XmlAssertion.assertThat(servicesXml)
+         .hasXPath("//*[local-name()='hotrod-connector']//*[local-name()='authentication' and @security-realm='ApplicationRealm']")
+         .hasXPath("//*[local-name()='hotrod-connector']//*[local-name()='authentication']//*[local-name()='sasl' and " +
+         "@server-name='caching-service' and @mechanisms='DIGEST-MD5' and @qop='auth']");
    }
 
    @Test
    public void should_adjust_configuration_templates() {
       //when
-      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "caching-service", requiredScriptParameters);
+      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "caching-service", requiredScriptParameters, requiredEnvVars);
 
       //then
       ResultAssertion.assertThat(result).printResult().isOk();

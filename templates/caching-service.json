@@ -26,6 +26,17 @@
          }
       },
       {
+         "kind": "Secret",
+         "apiVersion": "v1",
+         "metadata": {
+            "name": "${APPLICATION_NAME}"
+         },
+         "stringData" : {
+            "application-user" : "${APPLICATION_USER}",
+            "application-password" : "${APPLICATION_USER_PASSWORD}"
+         }
+      },
+      {
          "kind": "RoleBinding",
          "apiVersion": "v1",
          "metadata": {
@@ -213,6 +224,24 @@
                                     "fieldPath": "metadata.namespace"
                                  }
                               }
+                           },
+                           {
+                              "name": "APPLICATION_USER",
+                              "valueFrom": {
+                                 "secretKeyRef" : {
+                                    "name" : "${APPLICATION_NAME}",
+                                    "key" : "application-user"
+                                 }
+                              }
+                           },
+                           {
+                              "name": "APPLICATION_USER_PASSWORD",
+                              "valueFrom": {
+                                 "secretKeyRef" : {
+                                    "name" : "${APPLICATION_NAME}",
+                                    "key" : "application-password"
+                                 }
+                              }
                            }
                         ],
                         "image": "${IMAGE}",
@@ -314,12 +343,14 @@
       {
          "description": "Namespace for the application. Note: The namespace is required for creating proper RoleBindings. Specifying wrong namespace will prevent cluster from forming.",
          "name": "NAMESPACE",
+         "displayName": "Namespace",
          "required": true,
          "value": "myproject"
       },
       {
          "description": "The name for the application.",
          "name": "APPLICATION_NAME",
+         "displayName": "Application Name",
          "required": true,
          "value": "caching-service-app"
       },
@@ -332,14 +363,29 @@
       {
          "description": "Number of instances in the cluster.",
          "name": "NUMBER_OF_INSTANCES",
+         "displayName": "Number of Instances",
          "required": true,
          "value": "1"
       },
       {
          "description": "Total container memory in MiB.",
+         "displayName": "Total Memory",
          "name": "TOTAL_CONTAINER_MEM",
          "required": false,
          "value": "512"
+      },
+      {
+         "name": "APPLICATION_USER",
+         "displayName": "Client User",
+         "description": "Username for client applications",
+         "required": true
+      },
+      {
+         "name": "APPLICATION_USER_PASSWORD",
+         "displayName": "Client Password",
+         "description": "Password for client applications",
+         "generate": "expression",
+         "from": "[a-zA-Z0-9]{16}"
       }
    ]
 }

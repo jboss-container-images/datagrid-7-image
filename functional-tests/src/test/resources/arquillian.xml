@@ -12,7 +12,7 @@
       <property name="env.setup.script.url">setup.sh</property>
       <property name="env.teardown.script.url">destroy.sh</property>
       <property name="namespace.use.current">true</property>
-      <property name="wait.for.service.list">caching-service-app-hotrod, shared-memory-service-app-hotrod</property>
+      <property name="wait.for.service.list">caching-service-app-hotrod, shared-memory-service-app-hotrod, caching-service-app-http, shared-memory-service-app-http</property>
       <property name="env.script.env">image=${image}</property>
    </extension>
 
