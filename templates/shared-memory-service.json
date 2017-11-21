@@ -11,7 +11,7 @@
          "iconClass": "icon-datagrid",
          "tags": "java,database,datagrid,jboss",
          "template.openshift.io/documentation-url": "https://www.redhat.com/en/technologies/jboss-middleware/data-grid",
-         "template.openshift.io/long-description": "The Shared Memory Service stores data in memory by sharding it across the entire cluster and by maintaining a specified number of copies (owners) to ensure redundancy. This ensure that, in the case of failure, the grid will not lose data as long as the number of failed nodes is less than the number of copies. This also works when nodes are shutdown or restarted manually.",
+         "template.openshift.io/long-description": "In this image, JBoss Data Grid is configured as a shared memory service with persistence. That means any data stored by the service will be preserved across restarts. Persistence is achieved by replicating data across multiple nodes.\nThe data is copied to a specific number of nodes in the cluster using the \"owners\" setting. This ensures that, in the case of failure, the grid will not lose data as long as the number of failed nodes is less than the number of copies (owners). This also works when nodes are shutdown or restarted manually.",
          "template.openshift.io/provider-display-name": "Red Hat, Inc.",
          "template.openshift.io/support-url": "https://www.redhat.com/en/services/support"
       },
