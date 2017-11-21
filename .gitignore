@@ -58,6 +58,9 @@ fabric.properties
 
 .idea/
 
+### Intellij iml files
+**/*.iml
+
 ### Java ###
 # Compiled class file
 *.class
