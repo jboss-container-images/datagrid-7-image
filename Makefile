@@ -62,7 +62,7 @@ build-image:
 	( \
 		virtualenv ~/concreate; \
 		source ~/concreate/bin/activate; \
-		pip install -U concreate==1.0.0; \
+		pip install -U concreate==1.3.0; \
 		concreate generate --target target-docker; \
 		deactivate; \
 	)
