@@ -27,5 +27,4 @@ modules:
         - name: os-datagrid-online-services-launch
         - name: os-datagrid-online-services-configuration
         - name: os-datagrid-online-services-probes
-        - name: os-datagrid-online-modules-layers-ordering
         - name: os-datagrid-performance-logging
