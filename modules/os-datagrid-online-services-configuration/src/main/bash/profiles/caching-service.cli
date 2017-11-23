@@ -18,6 +18,14 @@ end-if
 /subsystem=datagrid-infinispan/cache-container=clustered/distributed-cache=default:write-attribute(name=configuration, value=caching-service)
 /subsystem=datagrid-infinispan/cache-container=clustered/distributed-cache=memcachedCache:write-attribute(name=configuration, value=caching-service)
 
+# This is a temporary solution until we find out what the proper way is. Alternatively this could be implemented in
+# services.xml however we are not fully committed to OpenShift PING at this point.
+if (outcome == success) of /subsystem=datagrid-jgroups/stack=kubernetes:read-resource
+   /subsystem=datagrid-jgroups/stack=kubernetes:remove
+   /subsystem=datagrid-jgroups/stack=kubernetes:add(transport={type=TCP, socket-binding=jgroups-tcp}, protocols=[{type=openshift.KUBE_PING, socket-binding=jgroups-mping},{type=MERGE3},{type=FD_SOCK,socket-binding=jgroups-tcp-fd},{type=FD_ALL},{type=VERIFY_SUSPECT},{type=pbcast.NAKACK2},{type=UNICAST3},{type=pbcast.STABLE},{type=pbcast.GMS},{type=MFC},{type=FRAG3}])
+   /subsystem=datagrid-jgroups/stack=kubernetes/protocol=pbcast.NAKACK2/property=use_mcast_xmit:add(value=false)
+end-if
+
 # Below settings were introduced to tune performance. Once we confirm them, we will add some tests.
 /subsystem=datagrid-infinispan/cache-container=clustered/thread-pool=transport:write-attribute(name=min-threads, value=1)
 /subsystem=datagrid-infinispan/cache-container=clustered/thread-pool=async-operations:write-attribute(name=min-threads, value=1)

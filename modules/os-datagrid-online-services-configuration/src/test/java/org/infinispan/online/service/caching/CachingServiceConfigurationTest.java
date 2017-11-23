@@ -93,7 +93,7 @@ public class CachingServiceConfigurationTest {
       XmlAssertion.assertThat(servicesXml)
       .hasXPath("//*[local-name()='stack' and @name='kubernetes']")
       .hasXPath("//*[local-name()='transport' and @type='TCP']")
-      .hasXPath("//*[local-name()='protocol' and @type='kubernetes.KUBE_PING']")
+      .hasXPath("//*[local-name()='protocol' and @type='openshift.KUBE_PING']")
       .hasXPath("//*[local-name()='protocol' and @type='FD_SOCK']")
       .hasXPath("//*[local-name()='protocol' and @type='FD_ALL']")
       .hasXPath("//*[local-name()='protocol' and @type='VERIFY_SUSPECT']")
