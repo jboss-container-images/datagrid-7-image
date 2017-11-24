@@ -1,8 +1,20 @@
 #!/bin/sh
 
-PROFILE=${PROFILE:=CACHING-SERVICE}
+function checkOptionalParamExists() {
+   var=$1
+   val=${!var}
+   if [ -z ${val} ]; then
+       echo "${var} param not set, falling back to '$2'" >&2
+       echo $2
+   else
+       echo "$var=$val" >&2
+   fi
+   echo ${val}
+}
+
 PROFILE=${PROFILE,,}
-CONFIG_FILE=${CONFIG_FILE:=services.xml}
+PROFILE=$(checkOptionalParamExists "PROFILE" "caching-service")
+CONFIG_FILE=$(checkOptionalParamExists "CONFIG_FILE" "services.xml")
 JGROUPS_STACK=kubernetes
 LOGGING_FILE=$JBOSS_HOME/standalone/configuration/logging.properties
 
@@ -16,7 +28,8 @@ source $JBOSS_HOME/bin/launch/configure.sh
 
 $JBOSS_HOME/bin/launch/jdg-online-configuration.sh --profile $PROFILE "eviction_total_memory_bytes=$EVICTION_TOTAL_MEMORY_B" "num_owners=${NUMBER_OF_OWNERS}"
 if [[ $? -ne 0 ]]; then
-    echo "WARNING: Profile ${PROFILE} doesn't exist. Falling back to Caching Service."
+    echo "ERROR: Service configuration failed, TERMINATING."
+    exit 1
 fi
 
 echo "Running $JBOSS_IMAGE_NAME image, version $JBOSS_IMAGE_VERSION"
