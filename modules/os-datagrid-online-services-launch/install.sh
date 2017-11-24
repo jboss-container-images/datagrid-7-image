@@ -7,6 +7,3 @@ SCRIPT_DIR=$(dirname $0)
 ADDED_DIR=${SCRIPT_DIR}/added
 
 cp -rfp ${ADDED_DIR}/datagrid-online-services.sh $JBOSS_HOME/bin
-
-# Add authentication config script
-cp -rfp ${ADDED_DIR}/launch/authentication-config.sh $JBOSS_HOME/bin/launch
