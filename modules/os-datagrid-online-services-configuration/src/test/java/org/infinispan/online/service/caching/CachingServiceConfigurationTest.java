@@ -77,7 +77,7 @@ public class CachingServiceConfigurationTest {
 
       //then
       ResultAssertion.assertThat(result).printResult().isOk();
-      XmlAssertion.assertThat(servicesXml).hasXPath("//*[local-name()='memcached-connector']");
+      XmlAssertion.assertThat(servicesXml).hasNoXPath("//*[local-name()='memcached-connector']");
       XmlAssertion.assertThat(servicesXml).hasXPath("//*[local-name()='rest-connector']");
       XmlAssertion.assertThat(servicesXml).hasXPath("//*[local-name()='hotrod-connector']");
    }
@@ -169,7 +169,7 @@ public class CachingServiceConfigurationTest {
          .hasXPath("//*[local-name()='distributed-cache-configuration' and @name='caching-service']")
          .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='shared-memory-service']")
          .hasXPath("//*[local-name()='distributed-cache' and @name='default' and @configuration='caching-service']")
-         .hasXPath("//*[local-name()='distributed-cache' and @name='memcachedCache' and @configuration='caching-service']")
+         .hasNoXPath("//*[local-name()='distributed-cache' and @name='memcachedCache' and @configuration='caching-service']")
          .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='async']")
          .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='indexed']")
          .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='memory-bounded']")
