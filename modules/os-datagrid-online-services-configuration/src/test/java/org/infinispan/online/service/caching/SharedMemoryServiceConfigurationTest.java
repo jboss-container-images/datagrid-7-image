@@ -47,7 +47,7 @@ public class SharedMemoryServiceConfigurationTest {
 
       //then
       ResultAssertion.assertThat(result).printResult().isOk();
-      XmlAssertion.assertThat(servicesXml).hasXPath("//*[local-name()='memcached-connector']");
+      XmlAssertion.assertThat(servicesXml).hasNoXPath("//*[local-name()='memcached-connector']");
       XmlAssertion.assertThat(servicesXml).hasXPath("//*[local-name()='rest-connector']");
       XmlAssertion.assertThat(servicesXml).hasXPath("//*[local-name()='hotrod-connector']");
    }
@@ -120,7 +120,7 @@ public class SharedMemoryServiceConfigurationTest {
          .hasXPath("//*[local-name()='distributed-cache-configuration' and @name='shared-memory-service']")
          .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='caching-service']")
          .hasXPath("//*[local-name()='distributed-cache' and @name='default' and @configuration='shared-memory-service']")
-         .hasXPath("//*[local-name()='distributed-cache' and @name='memcachedCache' and @configuration='shared-memory-service']");
+         .hasNoXPath("//*[local-name()='distributed-cache' and @name='memcachedCache' and @configuration='shared-memory-service']");
 //  https://issues.jboss.org/browse/ISPN-8341
 //         .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='default']")
 //         .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='memcachedCache']")
