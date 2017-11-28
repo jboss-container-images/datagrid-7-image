@@ -13,6 +13,9 @@ pipeline {
             // Workaround for JENKINS-47230
             script {
                env.MAVEN_HOME = tool('Maven')
+
+               // See https://github.com/openshift/origin/issues/15038#issuecomment-345252400
+               sh 'sudo rm -rf /usr/share/rhel/secrets'
             }
 
             checkout scm
