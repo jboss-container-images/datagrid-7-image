@@ -239,7 +239,7 @@
                                  "/opt/datagrid/bin/livenessProbe.sh"
                               ]
                            },
-                           "initialDelaySeconds": 5,
+                           "initialDelaySeconds": 15,
                            "timeoutSeconds": 10,
                            "periodSeconds": 20,
                            "successThreshold": 1,
@@ -251,7 +251,7 @@
                                  "/opt/datagrid/bin/readinessProbe.sh"
                               ]
                            },
-                           "initialDelaySeconds": 7,
+                           "initialDelaySeconds": 17,
                            "timeoutSeconds": 10,
                            "periodSeconds": 20,
                            "successThreshold": 2,
