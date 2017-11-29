@@ -1,68 +1,134 @@
-Red Hat JBoss Data Grid Online Services
-=======================================
+= Red Hat JBoss Data Grid Online Services
 
-Red Hat JBoss Data Grid Online Services consists of a multiple services:
+Red Hat JBoss Data Grid (JDG) Online Services consists of a multiple services:
 
-- Caching Service - the simplest, default cache
-- Shared Memory Service - a persistent cache
+- Caching Service - In this service, JBoss Data Grid is configured as an in-memory caching service without persistence. Data in the cache will be lost if the service is stopped or restarted, and therefore, it should not be used as a permanent store for data. It can be used to improve your application’s response time, by keeping frequently and recently accessed data in a high speed in-memory store.
+- Shared Memory Service - In this image, JBoss Data Grid is configured as a shared memory service with fault-tolerance. That means any data stored by the service will be preserved across restarts. Fault-tolerance is achieved by replicating data across multiple nodes. The data is copied to a specific number of nodes in the cluster using the `owners` setting. This ensures that, in the case of failure, the grid will not lose data as long as the number of failed nodes is less than the number of copies (owners). This also works when nodes are shutdown or restarted manually.
 
 The services are based on https://www.redhat.com/en/technologies/jboss-middleware/data-grid[JBoss Data Grid] technology and they expose various endpoints and configurations depending on the use case.
 
-What's inside?
---------------
+== Detailed Cache Features
+
+The detailed configuration is tightly connected to JDG Cache Configuration. The details might be found below:
+
+Caching Service:
+- No Cache Store
+- Single, distributed (with number of owners set to 1) default cache
+- Data eviction based on occupied memory
+- Authentication
+
+Shared Memory Service:
+- No Cache Store
+- Distributed caches (with specified number of owners) created on demand
+- Caches destroyed after idle timeout
+- No eviction
+- Authentication
+
+== Getting started
+
+Before you begin working with JDG Online Services, you will need a working OpenShift cluster as well as an `oc` client in your `$PATH`. See  https://docs.openshift.com/online/welcome/index.html[OpenShift documentation] how to achieve this.
+
+=== Installing JDG Online Services into Service Catalog
+
+JDG Online Services are supported on OpenShift Container Platform 3.7 (and equivalents such as OpenShift Online). In order to
+ make JDG Online Services available in the Service Catalog, the administrator needs to add all templates into `openshift`
+ namespace. This can be done by invoking `oc create -f templates/caching-service.json -n openshift` and
+ `oc create -f templates/shared-memory-service.json -n openshift` commands.
+
+
+=== Instantiating JDG Online Service
+
+Once the above templates are correctly installed, you can instantiate them using  the appropriate icon in the catalog.
+
+image::documentation/img/catalog-walkthrough.gif[JDG Online Service in the Service Catalog]
+
+Both Caching and Shared Memory services define a list of parameters, which have been explained below:
+
+.Caching Service parameters
+[options="header"]
+|======================
+|Option                    |Required/Optional? |Description                                                                               |Default option
+|NAMESPACE                 |Required           |Namespace in which this service was created. Used for setting up clustering configuration.|myproject
+|APPLICATION_NAME          |Required           |Application name                                                                          |caching-service-app
+|IMAGE                     |Required           |Image that will be used to bootstrap the service                                          |jboss-dataservices/datagrid-online-services
+|NUMBER_OF_INSTANCES       |Required           |Number of instances                                                                       |1
+|TOTAL_CONTAINER_MEM       |Optional           |Total container size (both limits and requests)                                           |512
+|APPLICATION_USER          |Required           |Username used for authentication                                                          |<none>
+|APPLICATION_USER_PASSWORD |Optional           |Password used for authentication                                                          |<generated>
+|======================
+
+.Shared Memory Service parameters
+[options="header"]
+|======================
+|Option                    |Required/Optional? |Description                                                                               |Default option
+|NAMESPACE                 |Required           |Namespace in which this service was created. Used for setting up clustering configuration.|myproject
+|APPLICATION_NAME          |Required           |Application name                                                                          |shared-memory-service-app
+|IMAGE                     |Required           |Image that will be used to bootstrap the service                                          |jboss-dataservices/datagrid-online-services
+|NUMBER_OF_INSTANCES       |Required           |Number of instances                                                                       |1
+|NUMBER_OF_OWNERS          |Optional           |Number of owners for a given piece of data                                                |2
+|TOTAL_CONTAINER_MEM       |Optional           |Total container size (both limits and requests)                                           |512
+|APPLICATION_USER          |Required           |Username used for authentication                                                          |<none>
+|APPLICATION_USER_PASSWORD |Optional           |Password used for authentication                                                          |<generated>
+|======================
+
+=== Creating a client application
+
+Once you instantiate one of the services, you might want to connect to it using a Hot Rod or REST client.
+
+The easiest way to do this is to use the https://github.com/jboss-developer/jboss-jdg-quickstarts/tree/jdg-7.2.x/caching-service[JDG Caching Service Quickstart].
+ The most important thing to remember is that all services use authentication.
+ The same credentials that were used while creating a service need to be used
+ in the client application. Here's an example:
+
+
+```
+Configuration c = new ConfigurationBuilder()
+      .addServer()
+          .host("caching-service-app")
+          .security().authentication().enable()
+            .username("test")
+            .password("test")
+            .realm("ApplicationRealm")
+            .serverName("caching-service")
+            .saslMechanism("DIGEST-MD5")
+            .saslQop(SaslQop.AUTH)
+      .build();
+
+RemoteCacheManager remoteCacheManager = new RemoteCacheManager(c);
+RemoteCache<String, String> cache = remoteCacheManager.getCache();
+```
+
+The above template is just an example. The quickstart covers more details on connecting to the existing
+ JDG Online Service.
+
+== What's next?
+
+If you're interested in our plans, visit our https://issues.jboss.org/secure/RapidBoard.jspa?rapidView=4167[JIRA board].
+
+== Development guide
+
+Prior to exploring this repository, it is highly advised to visit our https://docs.google.com/a/redhat.com/document/d/1gSGmytIW3u4IR1tXGmEekEa1AzhKfNvAPOAP0Fh32kQ/edit?usp=sharing[Contributing Guide].
 
 This repository has the following structure:
 
 ```
 +- Root
-    +-- caching-service - This service
-               +-- image.yaml - Image build recipe
-               +-- Makefile - A set of useful scripts for development work
-               +-- templates - OpenShift templates for this service
-               +-- modules - Modules used for the image
-               +-- functional-tests - Full end-to-end tests with Arquillian Cube
+      +-- image.yaml - Image build recipe
+      +-- Makefile - A set of useful scripts for development work
+      +-- templates - OpenShift templates for this service
+      +-- modules - Modules used for the image
+      +-- functional-tests - Full end-to-end tests with Arquillian Cube
 ```
 
-The `image.yaml` uses Python framework called http://concreate.readthedocs.io/en/develop/[Concreate] to build an image. The easiest way to start the build is to invoke `concreate image.yaml target` and invoke a standard Docker build from `target` directory.
+The `image.yaml` uses a Python framework called http://concreate.readthedocs.io/en/develop/[Concreate] to build an image. The easiest way to start the build is to invoke `concreate image.yaml target` and invoke a standard Docker build from the `target` directory.
 
 The `Makefile` contains lots of small, useful scripts. In order to perform a full end-to-end test, invoke `make test-ci`. This will spin up a local OpenShift cluster, build the image, install the template, invoke end-to-end tests and kill the cluster.
 
-The `templates` directory contains a template for Service Catalog. The easiest way to install it is to use `make install-templates-in-openshift-namespace`.
+The `templates` directory contains a template for the Service Catalog. The easiest way to install it is to use `make install-templates-in-openshift-namespace`.
 
 The `modules` directory contains modules used in `image.yaml`. See http://concreate.readthedocs.io/en/develop/[Concreate] documentation for more details.
 
-The `functional-tests` directory contains http://arquillian.org/arquillian-cube/[Arquillian Cube tests]. The tests assume that there's a running OpenShift cluster and `oc` or `kubectl` is already attached to it.
+The `functional-tests` directory contains http://arquillian.org/arquillian-cube/[Arquillian Cube tests]. The tests assume there is a running OpenShift cluster and `oc` or `kubectl` is already attached to it.
 
-How can I play with it?
------------------------
-
-At first you will need a working OpenShift cluster as well as `oc` client in your `$PATH`. See https://openshift.io/[OpenShift documentation] how to achieve this.
-
-The next step is to install the templates. Feel free to use our `Makefile` or manually invoke `oc create -f templates/caching-service.json -n openshift`. After this step you should see the new service in OpenShift UI.
-
-Depending on your OpenShift version and whether the Service Catalog is turned on or off, you need to spin up a new Caching Service instance in your Project.
-
-Once it's done, just use a Hot Rod client (or REST) to connect to it. Below is an example:
-
-```
-Configuration cachingServiceClientConfiguration = new ConfigurationBuilder()
-   .addServer()
-      .host("infinispan-app-hotrod") // This service is created by the template
-      .port(11222) // Standard Hot Rod port
-   .build();
-
-RemoteCacheManager cachingService = new RemoteCacheManager(cachingServiceClientConfiguration);
-RemoteCache<String, String> defaultCache = cachingService.getCache();
-
-defaultCache.put("test", "test"); // Start playing with the Cache
-```
-
-What's next?
-------------
-
-If you're interested in our plans, visit our https://issues.jboss.org/secure/RapidBoard.jspa?rapidView=4167[JIRA board].
-
-Useful links (mostly for development)
--------------------------------------
-
+Useful links:
 * Wildfly CLI guide: https://developer.jboss.org/wiki/CommandLineInterface
