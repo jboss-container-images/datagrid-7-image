@@ -71,8 +71,12 @@ public class HotRodTester implements EndpointTester {
       return cachingService.getCache(cacheName);
    }
 
+   public int getNumberOfNodesInTheCluster(URL urlToService) {
+      return getDefaultCache(urlToService, true).getCacheTopologyInfo().getSegmentsPerServer().keySet().size();
+
+   }
+
    public RemoteCacheManager getRemoteCacheManager(URL urlToService, boolean authenticate) {
-      //given
       Configuration cachingServiceClientConfiguration = new ConfigurationBuilder()
          .addServer()
          .host(urlToService.getHost())
