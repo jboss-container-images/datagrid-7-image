@@ -1,0 +1,1 @@
+from: "docker-registry.engineering.redhat.com/jboss-datagrid-7/datagrid72-openshift:dev"
