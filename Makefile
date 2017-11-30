@@ -1,7 +1,13 @@
 DEV_IMAGE_ORG = jboss-dataservices
-
+REGISTRY =
 DEV_IMAGE_NAME = datagrid-online-services-dev
-DEV_IMAGE_FULL_NAME = $(DEV_IMAGE_ORG)/$(DEV_IMAGE_NAME)
+ifeq ($(REGISTRY),)
+	DEV_IMAGE_FULL_NAME = $(DEV_IMAGE_ORG)/$(DEV_IMAGE_NAME)
+	CONCREATE_CMD = concreate generate --target target-docker;
+else
+	DEV_IMAGE_FULL_NAME = $(REGISTRY)/$(DEV_IMAGE_ORG)/$(DEV_IMAGE_NAME)
+	CONCREATE_CMD = concreate generate --overrides=overrides.yaml --target target-docker;
+endif
 
 # In order to test this image we need to do a little trick. The APB image is pushed under the following name:
 # http://$REGISTRY:5000/myproject/datagrid-online-services-apb
@@ -63,9 +69,10 @@ build-image:
 		virtualenv ~/concreate; \
 		source ~/concreate/bin/activate; \
 		pip install -U concreate==1.3.0; \
-		concreate generate --target target-docker; \
+		$(CONCREATE_CMD) \
 		deactivate; \
 	)
+	@echo "Building image " $(DEV_IMAGE_FULL_NAME)
 	sudo docker build --force-rm -t $(DEV_IMAGE_FULL_NAME) ./target-docker/image
 .PHONY: build-image
 
