@@ -292,7 +292,6 @@
                               "memory": "${TOTAL_CONTAINER_MEM}Mi"
                            },
                            "limits": {
-                              "cpu": "0.5",
                               "memory": "${TOTAL_CONTAINER_MEM}Mi"
                            }
                         }
