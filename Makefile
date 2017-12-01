@@ -151,8 +151,11 @@ clean-docker:
 clean: clean-docker clean-maven stop-openshift
 .PHONY: clean
 
-test-ci: clean test-unit start-openshift-with-catalog build-image push-image-to-local-openshift test-functional clean
+test-ci: clean test-unit start-openshift-with-catalog build-image push-image-to-local-openshift test-functional
 .PHONY: test-ci
+
+clean-ci: clean-docker clean-templates-in-helper-namespace stop-openshift #avoid cleaning Maven as we need results to be reported by the job
+.PHONY: clean-ci
 
 apb-build:
 	(\
