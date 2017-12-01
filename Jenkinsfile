@@ -22,27 +22,15 @@ pipeline {
          }
       }
 
-      stage('Unit tests') {
-         steps {
-            script {
-               configFileProvider([configFile(fileId: 'maven-settings-with-prod', variable: 'MAVEN_SETTINGS')]) {
-                  script {
-                     sh 'make MVN_COMMAND="$MAVEN_HOME/bin/mvn -s $MAVEN_SETTINGS" test-unit'
-                  }
-               }
-            }
-         }
-      }
-
-      stage('Functional and OpenShift tests') {
+      stage('Unit and Functional tests') {
          steps {
             script {
                configFileProvider([configFile(fileId: 'maven-settings-with-prod', variable: 'MAVEN_SETTINGS')]) {
                   script {
                      try {
-                        sh 'make MVN_COMMAND="$MAVEN_HOME/bin/mvn -s $MAVEN_SETTINGS" start-openshift-with-catalog build-image push-image-to-local-openshift test-functional'
+                        sh 'make MVN_COMMAND="$MAVEN_HOME/bin/mvn -s $MAVEN_SETTINGS" test-ci'
                      } finally {
-                        sh 'make MVN_COMMAND="$MAVEN_HOME/bin/mvn -s $MAVEN_SETTINGS" stop-openshift clean-docker'
+                        sh 'make MVN_COMMAND="$MAVEN_HOME/bin/mvn -s $MAVEN_SETTINGS" clean-ci'
                      }
                   }
                }
