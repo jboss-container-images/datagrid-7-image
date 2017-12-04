@@ -1,11 +1,11 @@
 DEV_IMAGE_ORG = jboss-dataservices
-REGISTRY =
+DOCKER_REGISTRY_PREFIX =
 DEV_IMAGE_NAME = datagrid-online-services-dev
-ifeq ($(REGISTRY),)
+ifeq ($(DOCKER_REGISTRY_PREFIX),)
 	DEV_IMAGE_FULL_NAME = $(DEV_IMAGE_ORG)/$(DEV_IMAGE_NAME)
 	CONCREATE_CMD = concreate generate --target target-docker;
 else
-	DEV_IMAGE_FULL_NAME = $(REGISTRY)/$(DEV_IMAGE_ORG)/$(DEV_IMAGE_NAME)
+	DEV_IMAGE_FULL_NAME = $(DOCKER_REGISTRY_PREFIX)/$(DEV_IMAGE_ORG)/$(DEV_IMAGE_NAME)
 	CONCREATE_CMD = concreate generate --overrides=overrides.yaml --target target-docker;
 endif
 
@@ -72,7 +72,6 @@ build-image:
 		$(CONCREATE_CMD) \
 		deactivate; \
 	)
-	@echo "Building image " $(DEV_IMAGE_FULL_NAME)
 	sudo docker build --force-rm -t $(DEV_IMAGE_FULL_NAME) ./target-docker/image
 .PHONY: build-image
 
