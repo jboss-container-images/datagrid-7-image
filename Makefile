@@ -91,7 +91,7 @@ push-image-to-local-openshift: _add_openshift_push_permissions _login_to_openshi
 .PHONY: push-image-to-local-openshift
 
 test-functional:
-	$(MVN_COMMAND) clean test -f functional-tests/pom.xml -Dimage=$(_IMAGE) -Dkubernetes.auth.token=$(shell oc whoami -t)
+	$(MVN_COMMAND) -Dimage=$(_IMAGE) -Dkubernetes.auth.token=$(shell oc whoami -t) clean test -f functional-tests/pom.xml
 .PHONY: test-functional
 
 test-unit:
