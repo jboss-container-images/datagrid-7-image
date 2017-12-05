@@ -30,8 +30,12 @@ public class HotRodTester implements EndpointTester {
    }
 
    public void testBasicEndpointCapabilities(URL urlToService, boolean authenticate) {
+      testBasicEndpointCapabilities(urlToService, authenticate, USERNAME, PASSWORD);
+   }
+
+   private void testBasicEndpointCapabilities(URL urlToService, boolean authenticate, String userName, String password) {
       //given
-      RemoteCache<String, String> defaultCache = getDefaultCache(urlToService, authenticate);
+      RemoteCache<String, String> defaultCache = getRemoteCacheManager(urlToService, authenticate, userName, password).getCache();
 
       //when
       defaultCache.put("should_default_cache_be_accessible_via_hot_rod", "test");
@@ -57,8 +61,13 @@ public class HotRodTester implements EndpointTester {
    }
 
    @Override
-   public void testIfEndpointIsProtected(URL urlToService) {
+   public void testIfEndpointIsProtectedAgainstNoCredentials(URL urlToService) {
       testBasicEndpointCapabilities(urlToService, false);
+   }
+
+   @Override
+   public void testIfEndpointIsProtectedAgainstWrongCredentials(URL urlToService) {
+      testBasicEndpointCapabilities(urlToService, true, "test", "wrongPassword");
    }
 
    public RemoteCache<String, String> getDefaultCache(URL urlToService, boolean authenticate) {
@@ -77,13 +86,17 @@ public class HotRodTester implements EndpointTester {
    }
 
    public RemoteCacheManager getRemoteCacheManager(URL urlToService, boolean authenticate) {
+      return getRemoteCacheManager(urlToService, authenticate, USERNAME, PASSWORD);
+   }
+
+   public RemoteCacheManager getRemoteCacheManager(URL urlToService, boolean authenticate, String username, String password) {
       Configuration cachingServiceClientConfiguration = new ConfigurationBuilder()
          .addServer()
          .host(urlToService.getHost())
          .port(urlToService.getPort())
          .security().authentication().enabled(authenticate)
-         .username("test")
-         .password("test")
+         .username(username)
+         .password(password)
          .realm("ApplicationRealm")
          .saslMechanism("DIGEST-MD5")
          .saslQop(SaslQop.AUTH)

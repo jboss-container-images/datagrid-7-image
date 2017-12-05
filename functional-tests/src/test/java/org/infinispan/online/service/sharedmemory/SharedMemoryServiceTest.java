@@ -51,7 +51,7 @@ public class SharedMemoryServiceTest {
 
    @Test(expected = HotRodClientException.class)
    public void should_default_cache_be_protected_via_hot_rod() throws IOException {
-      hotRodTester.testIfEndpointIsProtected(hotRodService);
+      hotRodTester.testIfEndpointIsProtectedAgainstNoCredentials(hotRodService);
    }
 
    @Test
@@ -61,7 +61,7 @@ public class SharedMemoryServiceTest {
 
    @Test
    public void should_default_cache_be_protected_via_REST() throws IOException {
-      restTester.testIfEndpointIsProtected(restService);
+      restTester.testIfEndpointIsProtectedAgainstNoCredentials(restService);
    }
 
    @Test

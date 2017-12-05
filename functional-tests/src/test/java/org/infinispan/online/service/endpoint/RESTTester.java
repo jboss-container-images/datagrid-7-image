@@ -1,13 +1,11 @@
 package org.infinispan.online.service.endpoint;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
 import io.restassured.response.Response;
-import org.infinispan.online.service.utils.TestObjectCreator;
-
 import io.restassured.specification.RequestSpecification;
+import org.infinispan.online.service.utils.TestObjectCreator;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.Assert.assertEquals;
@@ -41,14 +39,18 @@ public class RESTTester implements EndpointTester {
       }
    }
 
-   public void testIfEndpointIsProtected(URL urlToService) {
+   public void testIfEndpointIsProtectedAgainstNoCredentials(URL urlToService) {
       post(urlToService.toString() + "rest/default/should_default_cache_be_accessible_via_REST", "test", 401, false);
    }
 
-   private void post(String url, String body, int expectedCode, boolean authenticate) {
+   public void testIfEndpointIsProtectedAgainstWrongCredentials(URL urlToService) {
+      post(urlToService.toString() + "rest/default/should_default_cache_be_accessible_via_REST", "test", 401, true, "wrongUser", "wrongPassword");
+   }
+
+   private void post(String url, String body, int expectedCode, boolean authenticate, String userName, String password) {
       RequestSpecification spec = given();
       if (authenticate)
-         spec = spec.auth().basic("test", "test");
+         spec = spec.auth().basic(userName, password);
 
       spec
          .body(body)
@@ -58,7 +60,11 @@ public class RESTTester implements EndpointTester {
          .statusCode(expectedCode);
    }
 
-   public void putGetRemoveTest(URL urlToService) throws IOException {
+   private void post(String url, String body, int expectedCode, boolean authenticate) {
+      post(url, body, expectedCode, authenticate, USERNAME, PASSWORD);
+   }
+
+   public void putGetRemoveTest(URL urlToService) {
       String stringUrl = urlToService.toString();
 
       putGetTest(stringUrl);
