@@ -55,13 +55,28 @@ public class CachingServiceTest {
    }
 
    @Test
-   public void should_read_and_write_through_rest_endpoint() throws IOException {
+   public void should_read_and_write_through_rest_endpoint() {
       restTester.putGetRemoveTest(restService);
    }
 
    @Test(expected = HotRodClientException.class)
-   public void should_default_cache_be_protected_via_hot_rod() throws IOException {
-      hotRodTester.testIfEndpointIsProtected(hotRodService);
+   public void should_default_cache_be_protected_via_hot_rod_no_credentials() {
+      hotRodTester.testIfEndpointIsProtectedAgainstNoCredentials(hotRodService);
+   }
+
+   @Test(expected = HotRodClientException.class)
+   public void should_default_cache_be_protected_via_hot_rod_wrong_credentials() {
+      hotRodTester.testIfEndpointIsProtectedAgainstWrongCredentials(hotRodService);
+   }
+
+   @Test
+   public void should_default_cache_be_protected_via_REST_no_credentials() {
+      restTester.testIfEndpointIsProtectedAgainstNoCredentials(restService);
+   }
+
+   @Test
+   public void should_default_cache_be_protected_via_REST_wrong_credentials() {
+      restTester.testIfEndpointIsProtectedAgainstWrongCredentials(restService);
    }
 
    @Test
@@ -85,11 +100,6 @@ public class CachingServiceTest {
 
       restTester.testCacheAvailability(restService, "nonExistent", false);
       restTester.testCacheAvailability(restService, "memcachedCache", false);
-   }
-
-   @Test
-   public void should_default_cache_be_protected_via_REST() throws IOException {
-      restTester.testIfEndpointIsProtected(restService);
    }
 
    @Test

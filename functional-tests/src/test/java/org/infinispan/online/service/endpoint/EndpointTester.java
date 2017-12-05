@@ -5,9 +5,14 @@ import java.util.concurrent.TimeUnit;
 
 public interface EndpointTester {
 
+   String USERNAME = "test";
+   String PASSWORD = "test";
+
    void testBasicEndpointCapabilities(URL urlToService);
 
    void testPutPerformance(URL urlToService, long timeout, TimeUnit timeUnit);
 
-   void testIfEndpointIsProtected(URL urlToService);
+   void testIfEndpointIsProtectedAgainstNoCredentials(URL urlToService);
+
+   void testIfEndpointIsProtectedAgainstWrongCredentials(URL urlToService);
 }
