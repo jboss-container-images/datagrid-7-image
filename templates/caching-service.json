@@ -318,7 +318,7 @@
                      ],
                      "resources": {
                         "requests": {
-                           "storage": "256Ki"
+                           "storage": "1Gi"
                         }
                      }
                   }
