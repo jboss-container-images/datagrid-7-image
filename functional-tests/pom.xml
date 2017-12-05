@@ -17,6 +17,7 @@
       <assertj-core.version>3.8.0</assertj-core.version>
       <rest-assured.version>3.0.5</rest-assured.version>
       <version.chameleon>1.0.0.Beta2</version.chameleon>
+      <org.apache.maven.user-settings></org.apache.maven.user-settings>
    </properties>
 
    <dependencyManagement>
@@ -114,6 +115,7 @@
                   <!--Custom DNS resolver for OpenShift routes-->
                   <sun.net.spi.nameservice.provider.1>dns,CEArquillianNameService</sun.net.spi.nameservice.provider.1>
                   <sun.net.spi.nameservice.provider.2>default</sun.net.spi.nameservice.provider.2>
+                  <org.apache.maven.user-settings>${org.apache.maven.user-settings}</org.apache.maven.user-settings>
                </systemPropertyVariables>
             </configuration>
          </plugin>

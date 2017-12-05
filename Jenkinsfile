@@ -28,7 +28,7 @@ pipeline {
                configFileProvider([configFile(fileId: 'maven-settings-with-prod', variable: 'MAVEN_SETTINGS')]) {
                   script {
                      try {
-                        sh 'make MVN_COMMAND="$MAVEN_HOME/bin/mvn -s $MAVEN_SETTINGS" test-ci'
+                        sh 'make MVN_COMMAND="$MAVEN_HOME/bin/mvn -s $MAVEN_SETTINGS -Dorg.apache.maven.user-settings=$MAVEN_SETTINGS" test-ci'
                      } finally {
                         sh 'make MVN_COMMAND="$MAVEN_HOME/bin/mvn -s $MAVEN_SETTINGS" clean-ci'
                      }
