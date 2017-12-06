@@ -1,12 +1,17 @@
 DEV_IMAGE_ORG = jboss-dataservices
-DOCKER_REGISTRY_PREFIX =
+DOCKER_REGISTRY_ENGINEERING =
+DOCKER_REGISTRY_REDHAT =
 DEV_IMAGE_NAME = datagrid-online-services-dev
-ifeq ($(DOCKER_REGISTRY_PREFIX),)
+
+CE_DOCKER = $(shell docker version | grep Version | head -n 1 | grep -e "-ce")
+ifneq ($(CE_DOCKER),)
+	DOCKER_REGISTRY_ENGINEERING = docker-registry.engineering.redhat.com
+	DOCKER_REGISTRY_REDHAT = registry.access.redhat.com/
+	DEV_IMAGE_FULL_NAME = $(DOCKER_REGISTRY_ENGINEERING)/$(DEV_IMAGE_ORG)/$(DEV_IMAGE_NAME)
+	CONCREATE_CMD = concreate generate --overrides=overrides.yaml --target target-docker;
+else
 	DEV_IMAGE_FULL_NAME = $(DEV_IMAGE_ORG)/$(DEV_IMAGE_NAME)
 	CONCREATE_CMD = concreate generate --target target-docker;
-else
-	DEV_IMAGE_FULL_NAME = $(DOCKER_REGISTRY_PREFIX)/$(DEV_IMAGE_ORG)/$(DEV_IMAGE_NAME)
-	CONCREATE_CMD = concreate generate --overrides=overrides.yaml --target target-docker;
 endif
 
 # In order to test this image we need to do a little trick. The APB image is pushed under the following name:
@@ -97,7 +102,7 @@ push-image-to-local-openshift: _add_openshift_push_permissions _login_to_openshi
 .PHONY: push-image-to-local-openshift
 
 test-functional:
-	$(MVN_COMMAND) -Dimage=$(_IMAGE) -Dkubernetes.auth.token=$(shell oc whoami -t) clean test -f functional-tests/pom.xml
+	$(MVN_COMMAND) -Dimage=$(_IMAGE) -Dkubernetes.auth.token=$(shell oc whoami -t) -DDOCKER_REGISTRY_REDHAT=$(DOCKER_REGISTRY_REDHAT) clean test -f functional-tests/pom.xml
 .PHONY: test-functional
 
 test-unit:

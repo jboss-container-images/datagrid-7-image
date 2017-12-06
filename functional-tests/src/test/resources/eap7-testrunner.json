@@ -21,7 +21,7 @@
                   ]
                }
             },
-            "image": "jboss-eap-7/eap70-openshift:1.5-23",
+            "image": "${DOCKER_REGISTRY_REDHAT}jboss-eap-7/eap70-openshift:1.5-23",
             "ports": [
                {
                   "containerPort": 8080,
