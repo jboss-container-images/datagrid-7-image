@@ -26,7 +26,9 @@ CONFIGURE_SCRIPTS=(
 
 source $JBOSS_HOME/bin/launch/configure.sh
 
-$JBOSS_HOME/bin/launch/jdg-online-configuration.sh --profile $PROFILE "eviction_total_memory_bytes=$EVICTION_TOTAL_MEMORY_B" "num_owners=${NUMBER_OF_OWNERS}"
+$JBOSS_HOME/bin/launch/jdg-online-configuration.sh --profile $PROFILE "eviction_total_memory_bytes=$EVICTION_TOTAL_MEMORY_B" \
+"num_owners=${NUMBER_OF_OWNERS}" "keystore_file=${KEYSTORE_FILE}" "keystore_password=${KEYSTORE_PASSWORD}"
+
 if [[ $? -ne 0 ]]; then
     echo "ERROR: Service configuration failed, TERMINATING."
     exit 1
