@@ -6,20 +6,27 @@ import java.util.function.BooleanSupplier;
 
 public class Waiter {
 
+   public static final int MAX_NUMBER_OF_BACKOFFS = 10;
    public static final int DEFAULT_TIMEOUT = 30;
    public static final TimeUnit DEFAULT_TIMEOUT_UNIT = TimeUnit.SECONDS;
 
    public void waitFor(BooleanSupplier condition) {
-      waitFor(condition, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT_UNIT);
+      waitFor(condition, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT_UNIT, 1);
    }
 
-   public void waitFor(BooleanSupplier condition, long timeout, TimeUnit unit) {
+   public void waitFor(BooleanSupplier condition, long timeout, TimeUnit unit, int numberOfSuccessfulChecks) {
       long endTime = TimeUnit.MILLISECONDS.convert(timeout, unit) + System.currentTimeMillis();
       long backoffCounter = 0;
+      int successfulChecks = 0;
       while (System.currentTimeMillis() - endTime < 0) {
          if (condition.getAsBoolean()) {
-            break;
+            if (++successfulChecks >= numberOfSuccessfulChecks) {
+               break;
+            }
+         } else {
+            successfulChecks = 0;
          }
+         backoffCounter = backoffCounter + 1 > MAX_NUMBER_OF_BACKOFFS ? MAX_NUMBER_OF_BACKOFFS : backoffCounter + 1;
          LockSupport.parkNanos(++backoffCounter * 100_000_000);
       }
    }

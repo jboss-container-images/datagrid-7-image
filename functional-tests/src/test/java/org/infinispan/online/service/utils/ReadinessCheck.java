@@ -31,7 +31,7 @@ public class ReadinessCheck {
          System.out.println("Not ready Pods: " + notReadyPods);
          System.out.println("Ready Pods: " + readyPods);
          return false;
-      });
+      }, Waiter.DEFAULT_TIMEOUT, Waiter.DEFAULT_TIMEOUT_UNIT, 2);
    }
 
    private Set<Pod> getAllPods(OpenShiftClient client) {
