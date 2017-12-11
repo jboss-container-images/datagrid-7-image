@@ -17,6 +17,12 @@ end-if
 /subsystem=datagrid-infinispan-endpoint/hotrod-connector=hotrod-connector/authentication=AUTHENTICATION:add(security-realm=ApplicationRealm)
 /subsystem=datagrid-infinispan-endpoint/hotrod-connector=hotrod-connector/authentication=AUTHENTICATION/sasl=SASL:add(server-name=shared-memory-service, mechanisms=[DIGEST-MD5], qop=[auth])
 
+# Add keystore
+/core-service=management/security-realm=ApplicationRealm/server-identity=ssl:add(keystore-path=$keystore_file, keystore-password=$keystore_password)
+# Write encryption
+/subsystem=datagrid-infinispan-endpoint/rest-connector=rest-connector/encryption=ENCRYPTION:add(security-realm=ApplicationRealm)
+/subsystem=datagrid-infinispan-endpoint/hotrod-connector=hotrod-connector/encryption=ENCRYPTION:add(security-realm=ApplicationRealm)
+
 # Remove memcached as it is not secured
 if (outcome == success) of /subsystem=datagrid-infinispan/cache-container=clustered/distributed-cache=memcachedCache:read-resource
    /subsystem=datagrid-infinispan/cache-container=clustered/distributed-cache=memcachedCache:remove

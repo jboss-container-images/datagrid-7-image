@@ -61,7 +61,8 @@
          "kind": "Service",
          "metadata": {
             "annotations": {
-               "description": "Headless service for StatefulSets"
+               "description": "Headless service for StatefulSets",
+               "service.alpha.openshift.io/serving-cert-secret-name": "service-certs"
             },
             "labels": {
                "application": "${APPLICATION_NAME}"
@@ -186,6 +187,14 @@
                               }
                            },
                            {
+                              "name": "KEYSTORE_FILE",
+                              "value": "/var/run/secrets/java.io/keystores/${APPLICATION_NAME}.jks"
+                           },
+                           {
+                              "name": "KEYSTORE_PASSWORD",
+                              "value": "${KEYSTORE_PASSWORD}"
+                           },
+                           {
                               "name": "NODE_NAME",
                               "valueFrom": {
                                  "fieldRef": {
@@ -263,6 +272,10 @@
                            {
                               "name": "srv-data",
                               "mountPath": "/opt/jboss/infinispan-server/standalone/data"
+                           },
+                           {
+                              "name": "srv-data",
+                              "mountPath": "/var/run/secrets/java.io/keystores"
                            }
                         ],
                         "resources": {
@@ -273,6 +286,59 @@
                            "limits": {
                               "memory": "${TOTAL_CONTAINER_MEM}Mi"
                            }
+                        }
+                     }
+                  ],
+                  "initContainers": [
+                     {
+                        "name": "pem-to-keystore",
+                        "image": "registry.access.redhat.com/redhat-sso-7/sso71-openshift:1.1-16",
+                        "env": [
+                           {
+                              "name": "TLS_KEY_FILE",
+                              "value": "/var/run/secrets/openshift.io/serviceaccount/tls.key"
+                           },
+                           {
+                              "name": "CRT_FILE",
+                              "value": "/var/run/secrets/openshift.io/serviceaccount/tls.crt"
+                           },
+                           {
+                              "name": "KEYSTORE_PKCS12",
+                              "value": "/var/run/secrets/java.io/keystores/keystore.pkcs12"
+                           },
+                           {
+                              "name": "KEYSTORE_FILE",
+                              "value": "/var/run/secrets/java.io/keystores/${APPLICATION_NAME}.jks"
+                           },
+                           {
+                              "name": "KEYSTORE_PASSWORD",
+                              "value": "${KEYSTORE_PASSWORD}"
+                           }
+                        ],
+                        "command": [
+                           "/bin/bash"
+                        ],
+                        "args": [
+                           "-c",
+                           "rm -f $KEYSTORE_FILE && openssl pkcs12 -export -inkey $TLS_KEY_FILE -in $CRT_FILE -out $KEYSTORE_PKCS12 -password pass:$KEYSTORE_PASSWORD && keytool -importkeystore -noprompt -srckeystore $KEYSTORE_PKCS12 -srcstoretype pkcs12 -destkeystore $KEYSTORE_FILE -storepass $KEYSTORE_PASSWORD -srcstorepass $KEYSTORE_PASSWORD"
+                        ],
+                        "volumeMounts": [
+                           {
+                              "name": "srv-data",
+                              "mountPath": "/var/run/secrets/java.io/keystores"
+                           },
+                           {
+                              "name": "service-certs",
+                              "mountPath": "/var/run/secrets/openshift.io/serviceaccount"
+                           }
+                        ]
+                     }
+                  ],
+                  "volumes": [
+                     {
+                        "name": "service-certs",
+                        "secret": {
+                           "secretName": "service-certs"
                         }
                      }
                   ],
@@ -309,12 +375,14 @@
       {
          "description": "Namespace for the application. Note: The namespace is required for creating proper RoleBindings. Specifying wrong namespace will prevent cluster from forming.",
          "name": "NAMESPACE",
+         "displayName": "Namespace",
          "required": true,
          "value": "myproject"
       },
       {
          "description": "The name for the application.",
          "name": "APPLICATION_NAME",
+         "displayName": "Application Name",
          "required": true,
          "value": "shared-memory-service-app"
       },
@@ -327,17 +395,20 @@
       {
          "description": "Number of instances in the cluster.",
          "name": "NUMBER_OF_INSTANCES",
+         "displayName": "Number of Instances",
          "required": true,
          "value": "1"
       },
       {
         "description": "Number of replicas for each cache entry in the cluster.",
+        "displayNme": "Number of owners",
         "name": "NUMBER_OF_OWNERS",
         "required": false,
         "value": "2"
       },
       {
          "description": "Total container memory in MiB.",
+         "displayName": "Total Memory",
          "name": "TOTAL_CONTAINER_MEM",
          "required": false,
          "value": "512"
@@ -352,6 +423,13 @@
          "name": "APPLICATION_USER_PASSWORD",
          "displayName": "Client Password",
          "description": "Password for client applications",
+         "generate": "expression",
+         "from": "[a-zA-Z0-9]{16}"
+      },
+      {
+         "name": "KEYSTORE_PASSWORD",
+         "displayName": "Java Keystore Password",
+         "description": "Password for the created java keystore",
          "generate": "expression",
          "from": "[a-zA-Z0-9]{16}"
       }

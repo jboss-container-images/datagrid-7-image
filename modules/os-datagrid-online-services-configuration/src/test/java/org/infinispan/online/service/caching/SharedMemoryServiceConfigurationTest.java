@@ -7,7 +7,6 @@ import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.assertj.core.util.Maps;
 import org.infinispan.online.service.caching.assertions.ResultAssertion;
 import org.infinispan.online.service.caching.assertions.XmlAssertion;
 import org.infinispan.online.service.caching.util.ConfigurationScriptInvoker;
@@ -25,12 +24,16 @@ public class SharedMemoryServiceConfigurationTest {
    Path servicesXml = testServerLocator.locateServer().resolve("standalone/configuration/services.xml");
    Path jbossHome = testServerLocator.locateServer();
 
-   Map<String, String> requiredScriptParameters = Maps.newHashMap("num_owners", "3");
+   Map<String, String> requiredScriptParameters = new HashMap<>();
    Map<String, String> requiredEnvVars = new HashMap<>();
 
    public SharedMemoryServiceConfigurationTest() {
       requiredEnvVars.put("APPLICATION_USER", "test");
       requiredEnvVars.put("APPLICATION_USER_PASSWORD", "test");
+
+      requiredScriptParameters.put("num_owners", "3");
+      requiredScriptParameters.put("keystore_file", "test");
+      requiredScriptParameters.put("keystore_password", "test");
    }
 
 
