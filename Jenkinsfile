@@ -30,6 +30,7 @@ pipeline {
                      try {
                         sh 'make MVN_COMMAND="$MAVEN_HOME/bin/mvn -s $MAVEN_SETTINGS -Dorg.apache.maven.user-settings=$MAVEN_SETTINGS" test-ci'
                      } finally {
+                        sh 'tail -n +1 -- functional-tests/target/surefire-reports/*.txt'
                         sh 'make MVN_COMMAND="$MAVEN_HOME/bin/mvn -s $MAVEN_SETTINGS" clean-ci'
                      }
                   }
