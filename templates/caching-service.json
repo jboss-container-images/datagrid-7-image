@@ -282,7 +282,7 @@
                         ],
                         "volumeMounts": [
                            {
-                              "name": "${APPLICATION_NAME}-data",
+                              "name": "srv-data",
                               "mountPath": "/opt/jboss/infinispan-server/standalone/data"
                            }
                         ],
@@ -309,7 +309,7 @@
             "volumeClaimTemplates": [
                {
                   "metadata": {
-                     "name": "${APPLICATION_NAME}-data"
+                     "name": "srv-data"
                   },
                   "spec": {
                      "accessModes": [
