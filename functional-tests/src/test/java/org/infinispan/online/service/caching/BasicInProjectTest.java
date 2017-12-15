@@ -1,7 +1,10 @@
 package org.infinispan.online.service.caching;
 
-import io.fabric8.kubernetes.api.model.Pod;
-import io.fabric8.openshift.client.OpenShiftClient;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.List;
+
 import org.arquillian.cube.openshift.impl.requirement.RequiresOpenshift;
 import org.arquillian.cube.requirement.ArquillianConditionalRunner;
 import org.infinispan.client.hotrod.exceptions.HotRodClientException;
@@ -11,6 +14,7 @@ import org.infinispan.online.service.utils.DeploymentHelper;
 import org.infinispan.online.service.utils.OpenShiftClientCreator;
 import org.infinispan.online.service.utils.OpenShiftHandle;
 import org.infinispan.online.service.utils.ReadinessCheck;
+import org.infinispan.online.service.utils.TrustStore;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -20,11 +24,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
+import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.openshift.client.OpenShiftClient;
 
 @RunWith(ArquillianConditionalRunner.class)
 @RequiresOpenshift
@@ -32,8 +33,8 @@ public class BasicInProjectTest {
 
    URL hotRodService;
    URL restService;
-   HotRodTester hotRodTester = new HotRodTester("caching-service");
-   RESTTester restTester = new RESTTester();
+   HotRodTester hotRodTester = new HotRodTester("caching-service", "/var/run/secrets/java.io/keystores");
+   RESTTester restTester = new RESTTester("caching-service", "/var/run/secrets/java.io/keystores");
 
    ReadinessCheck readinessCheck = new ReadinessCheck();
    OpenShiftClient client = OpenShiftClientCreator.getClient();
@@ -54,6 +55,7 @@ public class BasicInProjectTest {
       readinessCheck.waitUntilAllPodsAreReady(client);
       hotRodService = handle.getServiceWithName("caching-service-app-hotrod");
       restService = handle.getServiceWithName("caching-service-app-http");
+      TrustStore.create("/var/run/secrets/java.io/keystores", "caching-service", client);
    }
 
    @Test
