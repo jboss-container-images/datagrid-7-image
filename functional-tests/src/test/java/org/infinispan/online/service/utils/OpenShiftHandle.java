@@ -10,7 +10,7 @@ import java.util.List;
 
 public class OpenShiftHandle {
 
-   private static final String HTTP_PROTOCOL = "http";
+   private static final String HTTP_PROTOCOL = "https";
 
    private OpenShiftClient client;
 

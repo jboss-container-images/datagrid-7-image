@@ -34,6 +34,10 @@
       <property name="proxiedContainerPorts">testrunner:9990</property>
       <!-- Fetch the logs from Openshift and pods, and save them into target/surefire-reports -->
       <property name="logs.copy">true</property>
+
+      <!-- Set these two props to false if you don't want the server to be destroyed after the tests finish -->
+      <property name="namespace.cleanup.enabled">true</property>
+      <property name="namespace.destroy.enabled">true</property>
    </extension>
 
    <container qualifier="testrunner" mode="suite" default="true">

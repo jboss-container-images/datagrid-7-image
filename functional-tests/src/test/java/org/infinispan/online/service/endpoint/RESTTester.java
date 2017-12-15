@@ -1,31 +1,43 @@
 package org.infinispan.online.service.endpoint;
 
-import java.io.IOException;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+
+import java.net.URI;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
-import io.restassured.response.Response;
+import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.api.Authentication;
+import org.eclipse.jetty.client.api.AuthenticationStore;
+import org.eclipse.jetty.client.api.ContentResponse;
+import org.eclipse.jetty.client.api.Request;
+import org.eclipse.jetty.client.util.BasicAuthentication;
+import org.eclipse.jetty.client.util.StringContentProvider;
+import org.eclipse.jetty.http.HttpHeader;
+import org.eclipse.jetty.http.HttpMethod;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.infinispan.online.service.utils.TestObjectCreator;
-
-import io.restassured.specification.RequestSpecification;
-
-import static io.restassured.RestAssured.given;
-import static org.junit.Assert.assertEquals;
+import org.infinispan.online.service.utils.TrustStore;
 
 public class RESTTester implements EndpointTester {
 
-   private String cache = "default";
-   private String value = "value";
-   private String key = "restKey";
-   private String newValue = "newValue";
+   private static String DEFAULT_CACHE = "default";
+   private final String trustStorePath;
+
+   public RESTTester(String serviceName, String trustStoreDir) {
+      this.trustStorePath = TrustStore.getPath(trustStoreDir, serviceName);
+   }
 
    public void testBasicEndpointCapabilities(URL urlToService) {
-      post(urlToService.toString() + "rest/default/should_default_cache_be_accessible_via_REST", "test", 200, true);
+      String url = createCacheUrl(urlToService, DEFAULT_CACHE, "should_default_cache_be_accessible_via_REST");
+      post(url, "test", 200, true);
+      delete(url); // Prevents 409 Conflict between subsequent posts to the same service+cache+key
    }
 
    public void testCacheAvailability(URL urlToService, String cache, boolean shouldBeAvailable) {
       int expectedCode = shouldBeAvailable ? 200 : 404;
-      post(urlToService.toString() + "rest/" + cache + "/should_cache_be_accessible_via_REST", "test", expectedCode, true);
+      post(urlToService, cache, "should_cache_be_accessible_via_REST", "test", expectedCode, true);
    }
 
    @Override
@@ -37,113 +49,154 @@ public class RESTTester implements EndpointTester {
       while (System.currentTimeMillis() - endTime < 0) {
          String key = testObjectCreator.getRandomString(1000);
          String value = testObjectCreator.getRandomString(1000);
-         post(value, urlToService.toString() + "rest/default/" + key, 200, true);
+         post(urlToService, key, value);
       }
    }
 
-
    public void testIfEndpointIsProtected(URL urlToService) {
-      post(urlToService.toString() + "rest/default/should_default_cache_be_accessible_via_REST", "test", 401, false);
+      post(urlToService, DEFAULT_CACHE, "isEndpointAuthenticated", "test", 401, false);
    }
 
-   private void post(String url, String body, int expectedCode, boolean authenticate) {
-      RequestSpecification spec = given();
-      if (authenticate)
-         spec = spec.auth().basic("test", "test");
-
-      spec
-         .body(body)
-         .when()
-         .post(url)
-         .then()
-         .statusCode(expectedCode);
-   }
-
-   public void putGetRemoveTest(URL urlToService) throws IOException {
-      String stringUrl = urlToService.toString();
-
-      putGetTest(stringUrl);
-      removeTest(stringUrl);
+   public void putGetRemoveTest(URL urlToService) {
+      String url = createCacheUrl(urlToService, DEFAULT_CACHE, "putGetRemoveTest");
+      putGetTest(url);
+      removeTest(url);
    }
 
    private void removeTest(String stringUrl) {
       //given
-      put(stringUrl, key, value);
+      put(stringUrl, "value");
       //when
-      removeMethod(stringUrl, key);
+      delete(stringUrl);
       //then
-      getMethod(stringUrl, key, 404);
+      get(stringUrl, 404);
    }
 
    private void putGetTest(String stringUrl) {
+      String value = "value";
+      String newValue = "newValue";
       //when
-      put(stringUrl, key, value);
+      put(stringUrl, value);
       //then
-      String restValue = getMethod(stringUrl, key);
+      String restValue = get(stringUrl, 200);
       assertEquals(value, restValue);
 
       //when
-      put(stringUrl, key, newValue);
+      put(stringUrl, newValue);
       //then
-      restValue = getMethod(stringUrl, key);
+      restValue = get(stringUrl, 200);
       assertEquals(newValue, restValue);
    }
 
-   protected void put(String url, String body, int expectedCode, boolean authenticate) {
-      RequestSpecification spec = given();
-      if (authenticate)
-         spec = spec.auth().basic("test", "test");
-
-      spec.body(body).when().put(url).then().statusCode(expectedCode);
+   private void delete(String url) {
+      HttpClient client;
+      try {
+         client = httpClient(url);
+         Request req = client.newRequest(url).method(HttpMethod.DELETE);
+         ContentResponse rsp = req.send();
+         assertResponseCodeEquals(rsp, 200);
+      } catch (Exception e) {
+         throw new IllegalStateException(e);
+      }
    }
 
-   protected void delete(String url, String body, int expectedCode, boolean authenticate) {
-      RequestSpecification spec = given();
-      if (authenticate)
-         spec = spec.auth().basic("test", "test");
-
-      spec.body(body).when().delete(url).then().statusCode(expectedCode);
+   private String get(String url, int expectedCode) {
+      HttpClient client = null;
+      try {
+         client = httpClient(url);
+         Request req = client.newRequest(url).method(HttpMethod.GET);
+         ContentResponse rsp = req.send();
+         assertResponseCodeEquals(rsp, expectedCode);
+         return rsp.getContentAsString();
+      } catch (Exception e) {
+         throw new IllegalStateException(e);
+      } finally {
+         stop(client);
+      }
    }
 
-   protected String get(String url, int expectedCode, boolean authenticate) {
-      RequestSpecification spec = given();
-      if (authenticate)
-         spec = spec.auth().basic("test", "test");
-
-      Response response = spec.when().get(url);
-      response.then().statusCode(expectedCode);
-      return response.andReturn().body().asString();
+   private void post(URL urlServerAddress, String key, String value) {
+      post(urlServerAddress, DEFAULT_CACHE, key, value, 200, true);
    }
 
-   public void post(String urlServerAddress, String key, String value, int expectedCode) {
-      post(urlServerAddress.toString() + "rest/" + cache + "/" + key, value, expectedCode, true);
+   private void post(URL urlServerAddress, String cache, String key, String body, int expectedCode, boolean authenticate) {
+      String url = createCacheUrl(urlServerAddress, cache, key);
+      post(url, body, expectedCode, authenticate);
    }
 
-   public void post(String urlServerAddress, String key, String value) {
-      post(urlServerAddress, key, value, 200);
+   private void post(String url, String body, int expectedCode, boolean authenticate) {
+      HttpClient client;
+      try {
+         client = httpClient(url, authenticate);
+         Request req = client.POST(url);
+         req.header(HttpHeader.ACCEPT, "text/plain");
+         req.header(HttpHeader.CONTENT_TYPE, "text/plain");
+         req.content(new StringContentProvider(body));
+         req.timeout(60, TimeUnit.SECONDS);
+         ContentResponse rsp = req.send();
+         assertResponseCodeEquals(rsp, expectedCode);
+      } catch (Exception e) {
+         throw new IllegalStateException(e);
+      }
    }
 
-   public void put(String urlServerAddress, String key, String value, int expectedCode) {
-      put(urlServerAddress.toString() + "rest/" + cache + "/" + key, value, expectedCode, true);
+   private void put(String url, String body) {
+      HttpClient client;
+      try {
+         client = httpClient(url);
+         Request req = client.newRequest(url).method(HttpMethod.PUT);
+         req.header(HttpHeader.ACCEPT, "text/plain");
+         req.header(HttpHeader.CONTENT_TYPE, "text/plain");
+         req.content(new StringContentProvider(body));
+         ContentResponse rsp = req.send();
+         assertResponseCodeEquals(rsp, 200);
+      } catch (Exception e) {
+         throw new IllegalStateException(e);
+      }
    }
 
-   public void put(String urlServerAddress, String key, String value) {
-      put(urlServerAddress, key, value, 200);
+   private HttpClient httpClient(String url) throws Exception {
+      return httpClient(url, true);
    }
 
-   public String getMethod(String urlServerAddress, String key, int expectedCode) {
-      return get(urlServerAddress.toString() + "rest/" + cache + "/" + key, expectedCode, true);
+   private HttpClient httpClient(String url, boolean authenticate) throws Exception {
+      HttpClient httpClient;
+      SslContextFactory sslContextFactory = new SslContextFactory();
+      sslContextFactory.setTrustStorePath(trustStorePath);
+      sslContextFactory.setTrustStorePassword(new String(TrustStore.TRUSTSTORE_PASSWORD));
+      sslContextFactory.setKeyStorePath(trustStorePath);
+      sslContextFactory.setKeyStorePassword(new String(TrustStore.TRUSTSTORE_PASSWORD));
+      httpClient = new HttpClient(sslContextFactory);
+      httpClient.setConnectTimeout(TimeUnit.SECONDS.toMillis(60));
+      httpClient.start();
+
+      URI uri = URI.create(url);
+      AuthenticationStore authStore = httpClient.getAuthenticationStore();
+      if (authenticate) {
+         authStore.addAuthenticationResult(new BasicAuthentication.BasicResult(uri, "test", "test"));
+      } else {
+         Authentication.Result authResult = authStore.findAuthenticationResult(uri);
+         if (authResult != null)
+            authStore.removeAuthenticationResult(authResult);
+      }
+      return httpClient;
    }
 
-   public String getMethod(String urlServerAddress, String key) {
-      return getMethod(urlServerAddress, key, 200);
+   private void assertResponseCodeEquals(ContentResponse rsp, int expectedCode) throws Exception {
+      assertThat(rsp.getStatus()).isEqualTo(expectedCode).withFailMessage("Rsp: %s", rsp);
    }
 
-   public void removeMethod(String urlServerAddress, String key, int expectedCode) {
-      delete(urlServerAddress.toString() + "rest/" + cache + "/" + key, "", expectedCode, true);
+   private String createCacheUrl(URL urlServerAddress, String cache, String key) {
+      return String.format("%srest/%s/%s", urlServerAddress.toString(), cache, key);
    }
 
-   public void removeMethod(String urlServerAddress, String key) {
-      removeMethod(urlServerAddress, key, 200);
+   private void stop(HttpClient client) {
+      if (client == null)
+         return;
+
+      try {
+         client.stop();
+      } catch (Exception ignore) {
+      }
    }
 }

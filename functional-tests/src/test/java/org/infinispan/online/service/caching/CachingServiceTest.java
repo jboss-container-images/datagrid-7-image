@@ -1,39 +1,43 @@
 package org.infinispan.online.service.caching;
 
 
-import io.fabric8.openshift.client.OpenShiftClient;
+import static org.junit.Assert.assertNull;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.concurrent.TimeUnit;
+
 import org.arquillian.cube.openshift.impl.requirement.RequiresOpenshift;
 import org.arquillian.cube.requirement.ArquillianConditionalRunner;
 import org.infinispan.client.hotrod.exceptions.HotRodClientException;
 import org.infinispan.online.service.endpoint.HotRodTester;
 import org.infinispan.online.service.endpoint.RESTTester;
 import org.infinispan.online.service.scaling.ScalingTester;
-import org.infinispan.online.service.utils.OpenShiftCommandlineClient;
 import org.infinispan.online.service.utils.OpenShiftClientCreator;
+import org.infinispan.online.service.utils.OpenShiftCommandlineClient;
 import org.infinispan.online.service.utils.OpenShiftHandle;
 import org.infinispan.online.service.utils.ReadinessCheck;
+import org.infinispan.online.service.utils.TrustStore;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.IOException;
-import java.net.URL;
-import java.util.concurrent.TimeUnit;
-
-import static org.junit.Assert.assertNull;
-import java.net.MalformedURLException;
+import io.fabric8.openshift.client.OpenShiftClient;
 
 @RunWith(ArquillianConditionalRunner.class)
 @RequiresOpenshift
 @RunAsClient //run outside OpenShift
 public class CachingServiceTest {
 
+   private static final String SERVICE_NAME = "caching-service";
+
    URL hotRodService;
    URL restService;
-   HotRodTester hotRodTester = new HotRodTester("caching-service");
-   RESTTester restTester = new RESTTester();
+   HotRodTester hotRodTester = new HotRodTester(SERVICE_NAME, "target");
+   RESTTester restTester = new RESTTester(SERVICE_NAME, "target");
    ScalingTester scalingTester = new ScalingTester();
    OpenShiftCommandlineClient commandlineClient = new OpenShiftCommandlineClient();
 
@@ -46,6 +50,7 @@ public class CachingServiceTest {
       readinessCheck.waitUntilAllPodsAreReady(client);
       hotRodService = handle.getServiceWithName("caching-service-app-hotrod");
       restService = handle.getServiceWithName("caching-service-app-http");
+      TrustStore.create("target", SERVICE_NAME, client);
    }
 
    @Test
@@ -74,12 +79,10 @@ public class CachingServiceTest {
       hotRodTester.evictionTest(hotRodService);
    }
 
-   // Only the default cache should be available in caching service
    @Test
-   @Ignore // remove when https://issues.jboss.org/browse/ISPN-8531 is resolved
    public void only_default_cache_should_be_available() {
-      assertNull(hotRodTester.getNamedCache(hotRodService, "memcachedCache", true));
-      assertNull(hotRodTester.getNamedCache(hotRodService, "nonExistent", true));
+      assertNull(hotRodTester.getNamedCache(hotRodService, "memcachedCache"));
+      assertNull(hotRodTester.getNamedCache(hotRodService, "nonExistent"));
 
       restTester.testCacheAvailability(restService, "nonExistent", false);
       restTester.testCacheAvailability(restService, "memcachedCache", false);

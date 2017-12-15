@@ -55,9 +55,54 @@
                },
                {
                   "name" : "DEBUG",
-                  "value" : "false"
+                  "value" : "true"
+               }
+            ],
+            "volumeMounts": [
+               {
+                  "name": "truststore-volume",
+                  "mountPath": "/var/run/secrets/java.io/keystores"
                }
             ]
+         }
+      ],
+      "initContainers": [
+         {
+            "name": "pem-to-truststore",
+            "image": "${DOCKER_REGISTRY_REDHAT}redhat-sso-7/sso71-openshift:1.1-16",
+            "env": [
+               {
+                  "name": "CA_BUNDLE",
+                  "value": "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt"
+               },
+               {
+                  "name": "TRUSTSTORE_JKS",
+                  "value": "/var/run/secrets/java.io/keystores/caching-service.jks"
+               },
+               {
+                  "name": "TRUSTSTORE_PASSWORD",
+                  "value": "test99"
+               }
+            ],
+            "command": [
+               "/bin/bash"
+            ],
+            "args": [
+               "-c",
+               "rm -f $TRUSTSTORE_JKS && csplit -z -f crt- $CA_BUNDLE '/-----BEGIN CERTIFICATE-----/' '{*}' && for file in crt-*; do keytool -import -noprompt -keystore $TRUSTSTORE_JKS -file $file -storepass $TRUSTSTORE_PASSWORD -alias service-$file; done"
+            ],
+            "volumeMounts": [
+               {
+                  "name": "truststore-volume",
+                  "mountPath": "/var/run/secrets/java.io/keystores"
+               }
+            ]
+         }
+      ],
+      "volumes": [
+         {
+            "name": "truststore-volume",
+            "emptyDir": {}
          }
       ]
    }
