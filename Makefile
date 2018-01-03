@@ -119,18 +119,22 @@ _relist-template-service-broker:
 install-templates-in-openshift-namespace: _relist-template-service-broker
 	oc create -f templates/caching-service.json -n openshift || true
 	oc create -f templates/shared-memory-service.json -n openshift || true
+	oc create -f templates/primary-store-service.json -n openshift || true
 .PHONY: install-templates-in-openshift-namespace
 
 install-templates:
 	oc create -f templates/caching-service.json || true
 	oc create -f templates/shared-memory-service.json || true
+	oc create -f templates/primary-store-service.json || true
 .PHONY: install-templates
 
 clear-templates:
 	oc delete all,secrets,sa,templates,configmaps,daemonsets,clusterroles,rolebindings,serviceaccounts --selector=template=caching-service || true
 	oc delete all,secrets,sa,templates,configmaps,daemonsets,clusterroles,rolebindings,serviceaccounts --selector=template=shared-memory-service || true
+	oc delete all,secrets,sa,templates,configmaps,daemonsets,clusterroles,rolebindings,serviceaccounts --selector=template=primary-store-service || true
 	oc delete template caching-service || true
 	oc delete template shared-memory-service || true
+	oc delete template primary-store-service || true
 .PHONY: clear-templates
 
 test-caching-service-manually:
@@ -140,6 +144,14 @@ test-caching-service-manually:
 	oc expose svc/caching-service-app-memcached || true
 	oc get routes
 .PHONY: test-caching-service-manually
+
+test-primary-store-service-manually:
+	oc process primary-store-service -p NAMESPACE=$(shell oc project -q) -p APPLICATION_USER=test -p APPLICATION_USER_PASSWORD=test -p IMAGE=$(_IMAGE) | oc create -f -
+	oc expose svc/primary-store-service-app-http || true
+	oc expose svc/primary-store-service-app-hotrod || true
+	oc expose svc/primary-store-service-app-memcached || true
+	oc get routes
+.PHONY: test-primary-store-service-manually
 
 test-shared-memory-service-manually:
 	oc process shared-memory-service -p NAMESPACE=$(shell oc project -q) -p APPLICATION_USER=test -p APPLICATION_USER_PASSWORD=test -p IMAGE=$(_IMAGE)  | oc create -f -
@@ -209,3 +221,7 @@ test-apb-provision: apb-push-to-local-broker
 test-apb-deprovision: apb-push-to-local-broker
 	oc run apb-test --rm=true --image=$(DEV_APB_IMAGE_FULL_NAME) --restart=Never --attach=true -- deprovision -e namespace=$(_TEST_PROJECT)
 .PHONY: test-apb-deprovision
+
+export-primary-store-configmap:
+	oc create configmap primary-store-configuration --from-file=./modules/os-datagrid-online-services-configuration/src/test/resources/caching-service/services-7.2.xml --output=json
+.PHONY: export-primary-store-configmap
