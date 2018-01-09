@@ -144,7 +144,6 @@ test-shared-memory-service-manually:
 	oc process shared-memory-service -p NAMESPACE=$(shell oc project -q) -p APPLICATION_USER=test -p APPLICATION_USER_PASSWORD=test -p IMAGE=$(_IMAGE)  | oc create -f -
 	oc expose svc/shared-memory-service-app-http || true
 	oc expose svc/shared-memory-service-app-hotrod || true
-	oc expose svc/shared-memory-service-app-memcached || true
 	oc get routes
 .PHONY: test-shared-memory-service-manually
 
