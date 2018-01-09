@@ -137,7 +137,6 @@ test-caching-service-manually:
 	oc process caching-service -p NAMESPACE=$(shell oc project -q) -p APPLICATION_USER=test -p APPLICATION_USER_PASSWORD=test -p IMAGE=$(_IMAGE) | oc create -f -
 	oc expose svc/caching-service-app-http || true
 	oc expose svc/caching-service-app-hotrod || true
-	oc expose svc/caching-service-app-memcached || true
 	oc get routes
 .PHONY: test-caching-service-manually
 
