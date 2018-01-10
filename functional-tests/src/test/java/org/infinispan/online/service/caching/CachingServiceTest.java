@@ -70,7 +70,6 @@ public class CachingServiceTest {
 
    // The eviction can not be turned off on caching service
    @Test(timeout = 600000)
-   @Ignore // TODO remove this when https://issues.jboss.org/browse/ISPN-8577 is resolved
    public void should_put_entries_until_first_one_gets_evicted() {
       hotRodTester.evictionTest(hotRodService);
    }

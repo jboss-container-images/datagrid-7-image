@@ -2,6 +2,7 @@ DEV_IMAGE_ORG = jboss-dataservices
 DOCKER_REGISTRY_ENGINEERING =
 DOCKER_REGISTRY_REDHAT =
 DEV_IMAGE_NAME = datagrid-online-services-dev
+ADDITIONAL_ARGUMENTS =
 
 CE_DOCKER = $(shell docker version | grep Version | head -n 1 | grep -e "-ce")
 ifneq ($(CE_DOCKER),)
@@ -102,11 +103,11 @@ push-image-to-local-openshift: _add_openshift_push_permissions _login_to_openshi
 .PHONY: push-image-to-local-openshift
 
 test-functional:
-	$(MVN_COMMAND) -Dimage=$(_IMAGE) -Dkubernetes.auth.token=$(shell oc whoami -t) -DDOCKER_REGISTRY_REDHAT=$(DOCKER_REGISTRY_REDHAT) clean test -f functional-tests/pom.xml
+	$(MVN_COMMAND) -Dimage=$(_IMAGE) -Dkubernetes.auth.token=$(shell oc whoami -t) -DDOCKER_REGISTRY_REDHAT=$(DOCKER_REGISTRY_REDHAT) clean test -f functional-tests/pom.xml $(ADDITIONAL_ARGUMENTS)
 .PHONY: test-functional
 
 test-unit:
-	$(MVN_COMMAND) clean test -f modules/os-datagrid-online-services-configuration/pom.xml
+	$(MVN_COMMAND) clean test -f modules/os-datagrid-online-services-configuration/pom.xml $(ADDITIONAL_ARGUMENTS)
 .PHONY: test-unit
 
 _relist-template-service-broker:
