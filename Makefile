@@ -158,6 +158,7 @@ clean-maven:
 clean-docker:
 	sudo docker rmi $(_IMAGE) || true
 	sudo docker rmi $(_APB_IMAGE) || true
+	rm -rf target-docker
 .PHONY: clean-docker
 
 clean: clean-docker clean-maven stop-openshift
