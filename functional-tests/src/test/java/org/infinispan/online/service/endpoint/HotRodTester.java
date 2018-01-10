@@ -177,19 +177,20 @@ public class HotRodTester implements EndpointTester {
       //given
       RemoteCacheManager cachingService = getRemoteCacheManager(hotRodService, true);
       RemoteCache<String, byte[]> byteArrayCache = cachingService.getCache();
-      byte[] firstValue = generateConstBytes(4096);
-
-      String key = "key";
-      byteArrayCache.put(key, firstValue);
-      assertArrayEquals(firstValue, byteArrayCache.get(key));
-
-      //when the first entry is evicted, the test ends
+      byte[] randomValue = generateConstBytes(1024*1024);
+      int currentCacheSize = -1;
+      int lastCacheSize = -1;
       long counter = 0;
-      while (byteArrayCache.get(key) != null) {
-         byte[] value = generateConstBytes(4096);
 
-         byteArrayCache.put(key + counter++, value);
-         assertArrayEquals(value, byteArrayCache.get(key));
-      }
+      //when
+      do {
+         lastCacheSize = currentCacheSize;
+         String key = "key" + counter++;
+
+         byteArrayCache.put(key, randomValue);
+         assertArrayEquals(randomValue, byteArrayCache.get(key));
+
+         currentCacheSize = byteArrayCache.size();
+      } while (currentCacheSize > lastCacheSize);
    }
 }
