@@ -74,7 +74,7 @@ build-image:
 	( \
 		virtualenv ~/concreate; \
 		source ~/concreate/bin/activate; \
-		pip install -U concreate==1.3.0; \
+		pip install -U concreate==1.3.4; \
 		$(CONCREATE_CMD) \
 		deactivate; \
 	)
