@@ -16,6 +16,7 @@ import org.infinispan.online.service.utils.OpenShiftHandle;
 import org.infinispan.online.service.utils.ReadinessCheck;
 import org.infinispan.online.service.utils.TrustStore;
 import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,6 +48,11 @@ public class SharedMemoryServiceTest {
       hotRodService = handle.getServiceWithName("shared-memory-service-app-hotrod");
       restService = handle.getServiceWithName("shared-memory-service-app-http");
       TrustStore.create("target", SERVICE_NAME, client);
+   }
+
+   @After
+   public void after() {
+      hotRodTester.clear(hotRodService);
    }
 
    @Test

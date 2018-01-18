@@ -7,7 +7,5 @@ public interface EndpointTester {
 
    void testBasicEndpointCapabilities(URL urlToService);
 
-   void testPutPerformance(URL urlToService, long timeout, TimeUnit timeUnit);
-
    void testIfEndpointIsProtected(URL urlToService);
 }
