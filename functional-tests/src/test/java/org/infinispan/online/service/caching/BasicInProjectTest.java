@@ -19,6 +19,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -56,6 +57,11 @@ public class BasicInProjectTest {
       hotRodService = handle.getServiceWithName("caching-service-app-hotrod");
       restService = handle.getServiceWithName("caching-service-app-http");
       TrustStore.create("/var/run/secrets/java.io/keystores", "caching-service", client);
+   }
+
+   @After
+   public void after() {
+      hotRodTester.clear(hotRodService);
    }
 
    @Test

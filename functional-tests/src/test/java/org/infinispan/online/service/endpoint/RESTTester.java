@@ -40,19 +40,6 @@ public class RESTTester implements EndpointTester {
       post(urlToService, cache, "should_cache_be_accessible_via_REST", "test", expectedCode, true);
    }
 
-   @Override
-   public void testPutPerformance(URL urlToService, long timeout, TimeUnit timeUnit) {
-      //given
-      long endTime = System.currentTimeMillis() + TimeUnit.MILLISECONDS.convert(timeout, timeUnit);
-      TestObjectCreator testObjectCreator = new TestObjectCreator();
-      //when
-      while (System.currentTimeMillis() - endTime < 0) {
-         String key = testObjectCreator.getRandomString(1000);
-         String value = testObjectCreator.getRandomString(1000);
-         post(urlToService, key, value);
-      }
-   }
-
    public void testIfEndpointIsProtected(URL urlToService) {
       post(urlToService, DEFAULT_CACHE, "isEndpointAuthenticated", "test", 401, false);
    }

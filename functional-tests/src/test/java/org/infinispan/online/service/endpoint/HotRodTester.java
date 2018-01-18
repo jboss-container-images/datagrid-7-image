@@ -8,6 +8,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.net.InetSocketAddress;
 import java.net.URL;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -34,6 +35,12 @@ public class HotRodTester implements EndpointTester {
       this.trustStorePath = TrustStore.getPath(trustStoreDir, serviceName);
    }
 
+   public void clear(URL urlToService) {
+      RemoteCacheManager cachingService = getRemoteCacheManager(urlToService, true);
+      RemoteCache<String, String> defaultCache = cachingService.getCache();
+      defaultCache.clear();
+   }
+
    public void testBasicEndpointCapabilities(URL urlToService) {
       testBasicEndpointCapabilities(urlToService, true);
    }
@@ -49,21 +56,6 @@ public class HotRodTester implements EndpointTester {
 
       //then
       assertThat(valueObtainedFromTheCache).isEqualTo("test");
-   }
-
-   @Override
-   public void testPutPerformance(URL urlToService, long timeout, TimeUnit timeUnit) {
-      //given
-      RemoteCache<String, String> defaultCache = getDefaultCache(urlToService);
-      long endTime = System.currentTimeMillis() + TimeUnit.MILLISECONDS.convert(timeout, timeUnit);
-      TestObjectCreator testObjectCreator = new TestObjectCreator();
-
-      //when
-      while (System.currentTimeMillis() - endTime < 0) {
-         String key = testObjectCreator.getRandomString(1000);
-         String value = testObjectCreator.getRandomString(1000);
-         defaultCache.put(key, value);
-      }
    }
 
    @Override

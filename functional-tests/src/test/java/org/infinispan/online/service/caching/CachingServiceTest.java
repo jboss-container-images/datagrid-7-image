@@ -20,6 +20,7 @@ import org.infinispan.online.service.utils.OpenShiftHandle;
 import org.infinispan.online.service.utils.ReadinessCheck;
 import org.infinispan.online.service.utils.TrustStore;
 import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -53,9 +54,9 @@ public class CachingServiceTest {
       TrustStore.create("target", SERVICE_NAME, client);
    }
 
-   @Test
-   public void should_not_blow_up_because_of_oom() {
-      hotRodTester.testPutPerformance(hotRodService, 60, TimeUnit.SECONDS);
+   @After
+   public void after() {
+      hotRodTester.clear(hotRodService);
    }
 
    @Test
@@ -73,7 +74,6 @@ public class CachingServiceTest {
       hotRodTester.putGetTest(hotRodService);
    }
 
-   // The eviction can not be turned off on caching service
    @Test(timeout = 600000)
    public void should_put_entries_until_first_one_gets_evicted() {
       hotRodTester.evictionTest(hotRodService);
