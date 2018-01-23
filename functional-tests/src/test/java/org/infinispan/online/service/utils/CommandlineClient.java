@@ -26,7 +26,6 @@ public class CommandlineClient {
    public Result invokeAndReturnResult(String command) {
       try {
          ProcessBuilder pb = new ProcessBuilder(command.split(" "));
-
          Process p = pb.start();
          int resultCode = p.waitFor();
          BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));

@@ -3,29 +3,30 @@ package org.infinispan.online.service.sharedmemory;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-
 import org.arquillian.cube.openshift.impl.requirement.RequiresOpenshift;
 import org.arquillian.cube.requirement.ArquillianConditionalRunner;
 import org.infinispan.client.hotrod.exceptions.HotRodClientException;
 import org.infinispan.online.service.endpoint.HotRodTester;
 import org.infinispan.online.service.endpoint.RESTTester;
 import org.infinispan.online.service.scaling.ScalingTester;
+import org.infinispan.online.service.utils.DeploymentHelper;
 import org.infinispan.online.service.utils.OpenShiftClientCreator;
-import org.infinispan.online.service.utils.OpenShiftCommandlineClient;
 import org.infinispan.online.service.utils.OpenShiftHandle;
 import org.infinispan.online.service.utils.ReadinessCheck;
 import org.infinispan.online.service.utils.TrustStore;
-import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.shrinkwrap.api.Archive;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import io.fabric8.openshift.client.OpenShiftClient;
+
 
 @RunWith(ArquillianConditionalRunner.class)
 @RequiresOpenshift
-@RunAsClient
 public class SharedMemoryServiceTest {
 
    private static final String SERVICE_NAME = "shared-memory-service";
@@ -33,12 +34,22 @@ public class SharedMemoryServiceTest {
    URL hotRodService;
    URL restService;
 
+   String trustStoreDir = System.getProperty("jboss.server.base.dir") +  "/data";
    ReadinessCheck readinessCheck = new ReadinessCheck();
-   HotRodTester hotRodTester = new HotRodTester(SERVICE_NAME, "target");
-   RESTTester restTester = new RESTTester(SERVICE_NAME, "target");
-   ScalingTester scalingTester = new ScalingTester();
-   OpenShiftCommandlineClient commandlineClient = new OpenShiftCommandlineClient();
+   HotRodTester hotRodTester = new HotRodTester(SERVICE_NAME, trustStoreDir);
+   RESTTester restTester = new RESTTester(SERVICE_NAME, trustStoreDir);
    OpenShiftClient client;
+
+   @Deployment
+   public static Archive<?> deploymentApp() {
+      return ShrinkWrap
+         .create(WebArchive.class, "test.war")
+         .addAsLibraries(DeploymentHelper.testLibs())
+         .addPackage(SharedMemoryServiceTest.class.getPackage())
+         .addPackage(ReadinessCheck.class.getPackage())
+         .addPackage(ScalingTester.class.getPackage())
+         .addPackage(HotRodTester.class.getPackage());
+   }
 
    @Before
    public void before() throws MalformedURLException {
@@ -47,7 +58,7 @@ public class SharedMemoryServiceTest {
       readinessCheck.waitUntilAllPodsAreReady(client);
       hotRodService = handle.getServiceWithName("shared-memory-service-app-hotrod");
       restService = handle.getServiceWithName("shared-memory-service-app-http");
-      TrustStore.create("target", SERVICE_NAME, client);
+      TrustStore.create(trustStoreDir, SERVICE_NAME, client);
    }
 
    @After
@@ -73,10 +84,5 @@ public class SharedMemoryServiceTest {
    @Test
    public void should_default_cache_be_protected_via_REST() throws IOException {
       restTester.testIfEndpointIsProtected(restService);
-   }
-
-   @Test
-   public void should_discover_new_cluster_members_when_scaling_up() {
-      scalingTester.testFormingAClusterAfterScalingUp("shared-memory-service-app", hotRodService, commandlineClient, readinessCheck, client, hotRodTester);
    }
 }
