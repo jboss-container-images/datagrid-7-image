@@ -48,6 +48,12 @@ start-openshift-with-catalog:
 
 	@echo "---- Switching to test project ----"
 	oc project $(_TEST_PROJECT)
+
+	@echo "---- Allowing containers to run specific users ----"
+	# Some of the JDK commands (jcmd, jps etc.) require the same user as the one running java process.
+	# The command below enabled that. The process inside the container will be ran using jboss user.
+	# The same users will be used by default for `oc rsh` command.
+	oc adm policy add-scc-to-group anyuid system:authenticated
 .PHONY: start-openshift-with-catalog
 
 start-openshift-with-catalog-and-ansible-service-broker: start-openshift-with-catalog install-ansible-service-broker
