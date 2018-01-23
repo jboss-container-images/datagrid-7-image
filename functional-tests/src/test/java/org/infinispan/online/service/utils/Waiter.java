@@ -4,10 +4,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
 import java.util.function.BooleanSupplier;
 
+import static org.junit.Assert.assertTrue;
+
 public class Waiter {
 
    public static final int MAX_NUMBER_OF_BACKOFFS = 10;
-   public static final int DEFAULT_TIMEOUT = 30;
+   public static final int DEFAULT_TIMEOUT = 120;
    public static final TimeUnit DEFAULT_TIMEOUT_UNIT = TimeUnit.SECONDS;
 
    public void waitFor(BooleanSupplier condition) {
@@ -29,6 +31,7 @@ public class Waiter {
          backoffCounter = backoffCounter + 1 > MAX_NUMBER_OF_BACKOFFS ? MAX_NUMBER_OF_BACKOFFS : backoffCounter + 1;
          LockSupport.parkNanos(++backoffCounter * 100_000_000);
       }
+      assertTrue("Timed out waiting for a condition!", condition.getAsBoolean());
    }
 
 }

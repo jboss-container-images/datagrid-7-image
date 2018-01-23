@@ -10,25 +10,21 @@ import java.net.URL;
 
 public class ScalingTester {
 
-   public void testFormingAClusterAfterScalingUp(String statefulSetName, URL hotRodService, OpenShiftCommandlineClient commandlineClient, ReadinessCheck readinessCheck, OpenShiftClient client, HotRodTester hotRodTester) {
-      //given
-      Waiter waiter = new Waiter();
-
-      //when
+   public void scaleUpStatefulSet(String statefulSetName, OpenShiftClient client, OpenShiftCommandlineClient commandlineClient, ReadinessCheck readinessCheck) {
       commandlineClient.scaleStatefulSet(statefulSetName, 2);
       readinessCheck.waitUntilTargetNumberOfReplicasAreReady(statefulSetName, 2, client);
+   }
 
-      //then
+   public void waitForClusterToForm(URL hotRodService, HotRodTester hotRodTester) {
+      Waiter waiter = new Waiter();
       //Even though the Pods are ready, there might be bad timing in the discovery protocol
       //and Pods didn't manage to form a cluster yet.
       //We need to wait in a loop to see it that really happened.
-      try {
-         waiter.waitFor(() -> hotRodTester.getNumberOfNodesInTheCluster(hotRodService) == 2);
-      } finally {
-         //cleanup
-         commandlineClient.scaleStatefulSet(statefulSetName, 1);
-         readinessCheck.waitUntilTargetNumberOfReplicasAreReady(statefulSetName, 1, client);
-      }
+      waiter.waitFor(() -> hotRodTester.getNumberOfNodesInTheCluster(hotRodService) == 2);
    }
 
+   public void scaleDownStatefulSet(String statefulSetName, OpenShiftClient client, OpenShiftCommandlineClient commandlineClient, ReadinessCheck readinessCheck) {
+      commandlineClient.scaleStatefulSet(statefulSetName, 1);
+      readinessCheck.waitUntilTargetNumberOfReplicasAreReady(statefulSetName, 1, client);
+   }
 }
