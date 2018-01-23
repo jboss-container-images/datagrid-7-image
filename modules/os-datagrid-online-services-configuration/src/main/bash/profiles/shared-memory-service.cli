@@ -42,6 +42,8 @@ if (outcome == success) of /subsystem=datagrid-jgroups/stack=kubernetes:read-res
    /subsystem=datagrid-jgroups/stack=kubernetes/protocol=pbcast.NAKACK2/property=use_mcast_xmit:add(value=false)
 end-if
 
+/subsystem=datagrid-infinispan-endpoint/hotrod-connector=hotrod-connector:write-attribute(name="worker-threads", value=$worker_threads)
+
 # Below settings were introduced to tune performance. Once we confirm them, we will add some tests.
 /subsystem=datagrid-infinispan/cache-container=clustered/thread-pool=transport:write-attribute(name=min-threads, value=1)
 /subsystem=datagrid-infinispan/cache-container=clustered/thread-pool=transport:write-attribute(name=max-threads, value=1)

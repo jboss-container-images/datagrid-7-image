@@ -15,6 +15,7 @@ function checkOptionalParamExists() {
 PROFILE=${PROFILE,,}
 PROFILE=$(checkOptionalParamExists "PROFILE" "caching-service")
 CONFIG_FILE=$(checkOptionalParamExists "CONFIG_FILE" "services.xml")
+WORKER_THREADS=$(checkOptionalParamExists "WORKER_THREADS" "8")
 JGROUPS_STACK=kubernetes
 LOGGING_FILE=$JBOSS_HOME/standalone/configuration/logging.properties
 
@@ -27,7 +28,7 @@ CONFIGURE_SCRIPTS=(
 source $JBOSS_HOME/bin/launch/configure.sh
 
 $JBOSS_HOME/bin/launch/jdg-online-configuration.sh --profile $PROFILE "eviction_total_memory_bytes=$EVICTION_TOTAL_MEMORY_B" \
-"num_owners=${NUMBER_OF_OWNERS}" "keystore_file=${KEYSTORE_FILE}" "keystore_password=${KEYSTORE_PASSWORD}"
+"num_owners=${NUMBER_OF_OWNERS}" "keystore_file=${KEYSTORE_FILE}" "keystore_password=${KEYSTORE_PASSWORD}" "worker_threads=${WORKER_THREADS}"
 
 if [[ $? -ne 0 ]]; then
     echo "ERROR: Service configuration failed, TERMINATING."

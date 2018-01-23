@@ -34,6 +34,7 @@ public class SharedMemoryServiceConfigurationTest {
       requiredScriptParameters.put("num_owners", "3");
       requiredScriptParameters.put("keystore_file", "test");
       requiredScriptParameters.put("keystore_password", "test");
+      requiredScriptParameters.put("worker_threads", "8");
    }
 
 
@@ -127,5 +128,17 @@ public class SharedMemoryServiceConfigurationTest {
 //  https://issues.jboss.org/browse/ISPN-8341
 //         .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='default']")
 //         .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='memcachedCache']")
+   }
+
+   @Test
+   public void should_adjust_worker_threads() {
+      //when
+      ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "shared-memory-service", requiredScriptParameters, requiredEnvVars);
+
+      //then
+      ResultAssertion.assertThat(result).printResult().isOk();
+
+      XmlAssertion.assertThat(servicesXml)
+         .hasXPath("//*[local-name()='hotrod-connector' and @worker-threads='8']");
    }
 }
