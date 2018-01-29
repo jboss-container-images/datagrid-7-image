@@ -6,13 +6,13 @@ ADDITIONAL_ARGUMENTS =
 
 CE_DOCKER = $(shell docker version | grep Version | head -n 1 | grep -e "-ce")
 ifneq ($(CE_DOCKER),)
-	DOCKER_REGISTRY_ENGINEERING = docker-registry.engineering.redhat.com
-	DOCKER_REGISTRY_REDHAT = registry.access.redhat.com/
-	DEV_IMAGE_FULL_NAME = $(DOCKER_REGISTRY_ENGINEERING)/$(DEV_IMAGE_ORG)/$(DEV_IMAGE_NAME)
-	CONCREATE_CMD = concreate generate --overrides=overrides.yaml --target target-docker;
+DOCKER_REGISTRY_ENGINEERING = docker-registry.engineering.redhat.com
+DOCKER_REGISTRY_REDHAT = registry.access.redhat.com/
+DEV_IMAGE_FULL_NAME = $(DOCKER_REGISTRY_ENGINEERING)/$(DEV_IMAGE_ORG)/$(DEV_IMAGE_NAME)
+CONCREATE_CMD = concreate generate --overrides=overrides.yaml --target target-docker;
 else
-	DEV_IMAGE_FULL_NAME = $(DEV_IMAGE_ORG)/$(DEV_IMAGE_NAME)
-	CONCREATE_CMD = concreate generate --target target-docker;
+DEV_IMAGE_FULL_NAME = $(DEV_IMAGE_ORG)/$(DEV_IMAGE_NAME)
+CONCREATE_CMD = concreate generate --target target-docker;
 endif
 
 # In order to test this image we need to do a little trick. The APB image is pushed under the following name:
@@ -22,6 +22,8 @@ endif
 # But the reality is different - we pushed it...
 DEV_APB_IMAGE_NAME = datagrid-online-services-apb
 DEV_APB_IMAGE_FULL_NAME = $(DEV_IMAGE_ORG)/$(DEV_APB_IMAGE_NAME)
+
+DOCKER_MEMORY=512M
 
 MVN_COMMAND = mvn
 
@@ -217,3 +219,16 @@ test-apb-provision: apb-push-to-local-broker
 test-apb-deprovision: apb-push-to-local-broker
 	oc run apb-test --rm=true --image=$(DEV_APB_IMAGE_FULL_NAME) --restart=Never --attach=true -- deprovision -e namespace=$(_TEST_PROJECT)
 .PHONY: test-apb-deprovision
+
+run-docker: build-image
+	$(shell mkdir -p ./capacity-tests/target/heapdumps)
+	$(shell chmod 777 ./capacity-tests/target/heapdumps)
+	# For some tests it is a good idea to add --memory-swappiness=0 --memory-swap $(DOCKER_MEMORY)
+	# This prevents container from swapping but on the other hand, you won't be able
+	# to allocate additional memory needed for the heap dump!
+	docker run --privileged=true -m $(DOCKER_MEMORY) -e USE_PERFORMANCE_LOGGING=true -e APPLICATION_USER=test -e APPLICATION_USER_PASSWORD=test -e KEYSTORE_FILE=/tmp/keystores/keystore_server.jks -e KEYSTORE_PASSWORD=secret -v $(shell pwd)/capacity-tests/src/test/resources:/tmp/keystores -v $(shell pwd)/capacity-tests/target/heapdumps:/tmp/heapdumps $(ADDITIONAL_ARGUMENTS) $(DEV_IMAGE_FULL_NAME)
+.PHONY: run-docker
+
+test-capacity:
+	$(MVN_COMMAND) clean test -f capacity-tests/pom.xml $(ADDITIONAL_ARGUMENTS)
+.PHONY: test-capacity
