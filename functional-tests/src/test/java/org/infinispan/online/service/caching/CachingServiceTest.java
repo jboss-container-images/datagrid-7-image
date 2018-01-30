@@ -22,7 +22,6 @@ import org.infinispan.online.service.utils.TrustStore;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -75,7 +74,6 @@ public class CachingServiceTest {
    }
 
    @Test(timeout = 600000)
-   @Ignore("To be turned on after https://issues.jboss.org/browse/JDG-1479 is fixed")
    public void should_put_entries_until_first_one_gets_evicted() {
       hotRodTester.evictionTest(hotRodService);
    }
