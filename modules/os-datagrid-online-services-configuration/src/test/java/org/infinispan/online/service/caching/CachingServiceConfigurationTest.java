@@ -183,10 +183,10 @@ public class CachingServiceConfigurationTest {
          .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='persistent-jdbc-binary-keyed']")
          .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='persistent-jdbc-string-keyed']")
          .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='persistent-leveldb-store']")
-         .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='transactional']");
-//  https://issues.jboss.org/browse/ISPN-8341
-//         .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='default']")
-//         .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='memcachedCache']");
+         .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='transactional']")
+         .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='default']")
+         .hasNoXPath("//*[local-name()='distributed-cache-configuration' and @name='memcachedCache']")
+         .hasXPath("//*[local-name()='distributed-cache' and @name='default']");
    }
 
    @Test
