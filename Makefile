@@ -143,7 +143,7 @@ clear-templates:
 .PHONY: clear-templates
 
 test-caching-service-manually:
-	oc process caching-service -p NAMESPACE=$(shell oc project -q) -p APPLICATION_USER=test \
+	oc process caching-service -p APPLICATION_USER=test \
 	-p APPLICATION_USER_PASSWORD=test -p IMAGE=$(_IMAGE) -p KEYSTORE_PASSWORD=test99 | oc create -f -
 	oc expose svc/caching-service-app-http || true
 	oc expose svc/caching-service-app-hotrod || true
@@ -151,7 +151,7 @@ test-caching-service-manually:
 .PHONY: test-caching-service-manually
 
 test-shared-memory-service-manually:
-	oc process shared-memory-service -p NAMESPACE=$(shell oc project -q) -p APPLICATION_USER=test \
+	oc process shared-memory-service -p APPLICATION_USER=test \
 	-p APPLICATION_USER_PASSWORD=test -p IMAGE=$(_IMAGE)  -p KEYSTORE_PASSWORD=test99 | oc create -f -
 	oc expose svc/shared-memory-service-app-http || true
 	oc expose svc/shared-memory-service-app-hotrod || true

@@ -87,7 +87,7 @@ public class CachingServiceConfigurationTest {
    }
 
    @Test
-   public void should_add_kube_ping() {
+   public void should_add_dns_ping() {
       //when
       ConfigurationScriptInvoker.Result result = configurationScriptInvoker.invokeScript(jbossHome, "caching-service", requiredScriptParameters, requiredEnvVars);
 
@@ -97,7 +97,7 @@ public class CachingServiceConfigurationTest {
       XmlAssertion.assertThat(servicesXml)
       .hasXPath("//*[local-name()='stack' and @name='kubernetes']")
       .hasXPath("//*[local-name()='transport' and @type='TCP']")
-      .hasXPath("//*[local-name()='protocol' and @type='openshift.KUBE_PING']")
+      .hasXPath("//*[local-name()='protocol' and @type='openshift.DNS_PING']")
       .hasXPath("//*[local-name()='protocol' and @type='FD_SOCK']")
       .hasXPath("//*[local-name()='protocol' and @type='FD_ALL']")
       .hasXPath("//*[local-name()='protocol' and @type='VERIFY_SUSPECT']")
