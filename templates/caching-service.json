@@ -19,13 +19,6 @@
    },
    "objects": [
       {
-         "kind": "ServiceAccount",
-         "apiVersion": "v1",
-         "metadata": {
-            "name": "${APPLICATION_NAME}"
-         }
-      },
-      {
          "kind": "Secret",
          "apiVersion": "v1",
          "metadata": {
@@ -34,26 +27,6 @@
          "stringData" : {
             "application-user" : "${APPLICATION_USER}",
             "application-password" : "${APPLICATION_USER_PASSWORD}"
-         }
-      },
-      {
-         "kind": "RoleBinding",
-         "apiVersion": "v1",
-         "metadata": {
-            "name": "${APPLICATION_NAME}-view"
-         },
-         "userNames": [
-            "system:serviceaccount:${NAMESPACE}:${APPLICATION_NAME}"
-         ],
-         "groupNames": null,
-         "subjects": [
-            {
-               "kind": "ServiceAccount",
-               "name": "${APPLICATION_NAME}"
-            }
-         ],
-         "roleRef": {
-            "name": "view"
          }
       },
       {
@@ -80,6 +53,32 @@
                   "name": "hotrod",
                   "port": 11222,
                   "targetPort": 11222
+               }
+            ],
+            "selector": {
+               "deploymentConfig": "${APPLICATION_NAME}"
+            },
+            "clusterIP": "None"
+         }
+      },
+      {
+         "apiVersion": "v1",
+         "kind": "Service",
+         "metadata": {
+            "annotations": {
+               "description": "The JGroups ping port for clustering.",
+               "service.alpha.kubernetes.io/tolerate-unready-endpoints": "true"
+            },
+            "labels": {
+               "application": "${APPLICATION_NAME}"
+            },
+            "name": "${APPLICATION_NAME}-ping"
+         },
+         "spec": {
+            "ports": [
+               {
+                  "name": "ping",
+                  "port": 8888
                }
             ],
             "selector": {
@@ -175,16 +174,12 @@
                               "value": "CACHING-SERVICE"
                            },
                            {
-                              "name": "OPENSHIFT_KUBE_PING_LABELS",
-                              "value": "application=${APPLICATION_NAME}"
+                              "name": "OPENSHIFT_DNS_PING_SERVICE_NAME",
+                              "value": "${APPLICATION_NAME}-ping"
                            },
                            {
-                              "name": "OPENSHIFT_KUBE_PING_NAMESPACE",
-                              "valueFrom": {
-                                 "fieldRef": {
-                                    "fieldPath": "metadata.namespace"
-                                 }
-                              }
+                              "name": "OPENSHIFT_DNS_PING_SERVICE_PORT",
+                              "value": "8888"
                            },
                            {
                               "name": "KEYSTORE_FILE",
@@ -330,8 +325,7 @@
                         }
                      }
                   ],
-                  "terminationGracePeriodSeconds": 60,
-                  "serviceAccountName": "${APPLICATION_NAME}"
+                  "terminationGracePeriodSeconds": 60
                }
             },
             "triggers": [
@@ -360,13 +354,6 @@
       }
    ],
    "parameters": [
-      {
-         "description": "Namespace for the application. Note: The namespace is required for creating proper RoleBindings. Specifying wrong namespace will prevent cluster from forming.",
-         "name": "NAMESPACE",
-         "displayName": "Namespace",
-         "required": true,
-         "value": "myproject"
-      },
       {
          "description": "The name for the application.",
          "name": "APPLICATION_NAME",
