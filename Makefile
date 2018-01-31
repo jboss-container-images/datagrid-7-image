@@ -7,15 +7,16 @@ ADDITIONAL_ARGUMENTS =
 
 CE_DOCKER = $(shell docker version | grep Version | head -n 1 | grep -e "-ce")
 ifneq ($(CE_DOCKER),)
-	DOCKER_REGISTRY_ENGINEERING = docker-registry.engineering.redhat.com
-	DOCKER_REGISTRY_REDHAT = registry.access.redhat.com/
-	DEV_IMAGE_FULL_NAME = $(DOCKER_REGISTRY_ENGINEERING)/$(DEV_IMAGE_ORG)/$(DEV_IMAGE_NAME)
-	IMAGE_FULL_NAME = $(DOCKER_REGISTRY_ENGINEERING)/$(DEV_IMAGE_ORG)/$(IMAGE_NAME)
-	CONCREATE_CMD = concreate generate --overrides=overrides.yaml --target target-docker;
+DOCKER_REGISTRY_ENGINEERING = docker-registry.engineering.redhat.com
+DOCKER_REGISTRY_REDHAT = registry.access.redhat.com/
+DEV_IMAGE_FULL_NAME = $(DOCKER_REGISTRY_ENGINEERING)/$(DEV_IMAGE_ORG)/$(DEV_IMAGE_NAME)
+TEST_IMAGE_FULL_NAME = $(DOCKER_REGISTRY_ENGINEERING)/$(DEV_IMAGE_ORG)/$(TEST_IMAGE_NAME)
+IMAGE_FULL_NAME = $(DOCKER_REGISTRY_ENGINEERING)/$(DEV_IMAGE_ORG)/$(IMAGE_NAME)
+CONCREATE_CMD = concreate generate --overrides=overrides.yaml --target target-docker;
 else
-	DEV_IMAGE_FULL_NAME = $(DEV_IMAGE_ORG)/$(DEV_IMAGE_NAME)
-	TEST_IMAGE_FULL_NAME = $(DEV_IMAGE_ORG)/$(TEST_IMAGE_NAME)
-	CONCREATE_CMD = concreate generate --target target-docker;
+DEV_IMAGE_FULL_NAME = $(DEV_IMAGE_ORG)/$(DEV_IMAGE_NAME)
+TEST_IMAGE_FULL_NAME = $(DEV_IMAGE_ORG)/$(TEST_IMAGE_NAME)
+CONCREATE_CMD = concreate generate --target target-docker;
 endif
 
 # In order to test this image we need to do a little trick. The APB image is pushed under the following name:
@@ -35,23 +36,21 @@ APB_COMMAND = docker run --rm --privileged -v `pwd`:/mnt -v ${HOME}/.kube:/.kube
 
 _TEST_PROJECT = myproject
 
-#Change addresses for remote OpenShift only when _OPENSHIFT_DOMAIN env variable is set.
-ifeq ($(_OPENSHIFT_DOMAIN),)
-	_DOCKER_REGISTRY = "$(shell oc get svc/docker-registry -n default -o yaml | grep 'clusterIP:' | awk '{print $$2}'):5000"
-	_IMAGE = $(_DOCKER_REGISTRY)/$(_TEST_PROJECT)/$(DEV_IMAGE_NAME)
-	_APB_IMAGE = $(_DOCKER_REGISTRY):5000/$(_TEST_PROJECT)/$(DEV_APB_IMAGE_NAME)
-	_USERNAME = developer
-	_PASSWORD = developer
-	_TESTRUNNER_HOST = testrunner-$(_TEST_PROJECT).127.0.0.1.nip.io
-	_TESTRUNNER_PORT = 80
+#Set variables for remote openshift when _OPENSHIFT_MASTER is defined
+ifeq ($(_OPENSHIFT_MASTER),)
+_OPENSHIFT_MASTER = https://127.0.0.1:8443
+_DOCKER_REGISTRY = "$(shell oc get svc/docker-registry -n default -o yaml | grep 'clusterIP:' | awk '{print $$2}'):5000"
+_IMAGE = $(_DOCKER_REGISTRY)/$(_TEST_PROJECT)/$(DEV_IMAGE_NAME)
+_APB_IMAGE = $(_DOCKER_REGISTRY):5000/$(_TEST_PROJECT)/$(DEV_APB_IMAGE_NAME)
+_OPENSHIFT_USERNAME = developer
+_OPENSHIFT_PASSWORD = developer
+_TESTRUNNER_PORT = 80
 else
-	_OPENSHIFT_MASTER = https://osemaster.$(_OPENSHIFT_DOMAIN):8443
-	_DOCKER_REGISTRY = docker-registry.engineering.redhat.com
-	_IMAGE = $(TEST_IMAGE_FULL_NAME)
-	_USERNAME = newadmin
-	_PASSWORD = redhat
-	_TESTRUNNER_HOST = testrunner-$(_TEST_PROJECT).ose.$(_OPENSHIFT_DOMAIN)
-	_TESTRUNNER_PORT = 80
+_DOCKER_REGISTRY = docker-registry.engineering.redhat.com
+_IMAGE = $(TEST_IMAGE_FULL_NAME)
+_OPENSHIFT_USERNAME = newadmin
+_OPENSHIFT_PASSWORD = redhat
+_TESTRUNNER_PORT = 80
 endif
 
 # This username and password is hardcoded (and base64 encoded) in the Ansible
@@ -62,14 +61,9 @@ _ANSIBLE_SERVICE_BROKER_PASSWORD = admin
 start-openshift-with-catalog:
 	@echo "---- Starting OpenShift ----"
 	oc cluster up --service-catalog
-
 	@echo "---- Granting admin rights to Developer ----"
 	oc login -u system:admin
-	oc adm policy add-cluster-role-to-user cluster-admin $(_USERNAME)
-	oc login -u $(_USERNAME) -p $(_PASSWORD)
-
-	@echo "---- Switching to test project ----"
-	oc project $(_TEST_PROJECT)
+	oc adm policy add-cluster-role-to-user cluster-admin $(_OPENSHIFT_USERNAME)
 
 	@echo "---- Allowing containers to run specific users ----"
 	# Some of the JDK commands (jcmd, jps etc.) require the same user as the one running java process.
@@ -78,20 +72,17 @@ start-openshift-with-catalog:
 	oc adm policy add-scc-to-group anyuid system:authenticated
 .PHONY: start-openshift-with-catalog
 
-start-openshift-with-catalog-and-ansible-service-broker: start-openshift-with-catalog install-ansible-service-broker
-.PHONY: start-openshift-with-catalog-and-ansible-service-broker
-
-prepare-remote-openshift: clean-remote-openshift
+prepare-openshift-project: clean-openshift
 	@echo "---- Create main project for test purposes"
 	oc new-project $(_TEST_PROJECT)
 
 	@echo "---- Switching to test project ----"
 	oc project $(_TEST_PROJECT)
-.PHONY: prepare-remote-openshift
+.PHONY: prepare-openshift-project
 
-clean-remote-openshift:
+clean-openshift:
 	@echo "---- Login ----"
-	oc login $(_OPENSHIFT_MASTER) -u $(_USERNAME) -p $(_PASSWORD)
+	oc login $(_OPENSHIFT_MASTER) -u $(_OPENSHIFT_USERNAME) -p $(_OPENSHIFT_PASSWORD)
 
 	@echo "---- Deleting projects ----"
 	oc delete project $(_TEST_PROJECT) || true
@@ -101,7 +92,10 @@ clean-remote-openshift:
 			sleep 5; \
 		done; \
 	)
-.PHONY: clean-remote-openshift
+.PHONY: clean-openshift
+
+start-openshift-with-catalog-and-ansible-service-broker: start-openshift-with-catalog prepare-openshift-project install-ansible-service-broker
+.PHONY: start-openshift-with-catalog-and-ansible-service-broker
 
 install-ansible-service-broker:
 	@echo "---- Installing Ansible Service Broker ----"
@@ -142,9 +136,9 @@ _login_to_openshift:
 .PHONY: _login_to_openshift
 
 _add_openshift_push_permissions:
-	oc adm policy add-role-to-user system:registry $(_USERNAME) || true
-	oc adm policy add-role-to-user admin $(_USERNAME) -n ${_TEST_PROJECT} || true
-	oc adm policy add-role-to-user system:image-builder $(_USERNAME) || true
+	oc adm policy add-role-to-user system:registry $(_OPENSHIFT_USERNAME) || true
+	oc adm policy add-role-to-user admin $(_OPENSHIFT_USERNAME) -n ${_TEST_PROJECT} || true
+	oc adm policy add-role-to-user system:image-builder $(_OPENSHIFT_USERNAME) || true
 .PHONY: _add_openshift_push_permissions
 
 push-image-to-local-openshift: _add_openshift_push_permissions _login_to_openshift
@@ -152,9 +146,14 @@ push-image-to-local-openshift: _add_openshift_push_permissions _login_to_openshi
 	sudo docker push $(_IMAGE)
 .PHONY: push-image-to-local-openshift
 
-test-functional:
-	$(MVN_COMMAND) -Dimage=$(_IMAGE) -Dkubernetes.auth.token=$(shell oc whoami -t) -DDOCKER_REGISTRY_REDHAT=$(DOCKER_REGISTRY_REDHAT) -DTESTRUNNER_HOST=${_TESTRUNNER_HOST} -DTESTRUNNER_PORT=${_TESTRUNNER_PORT} clean test -f functional-tests/pom.xml $(ADDITIONAL_ARGUMENTS)
+test-functional: deploy-testrunner-route
+	$(MVN_COMMAND) -Dimage=$(_IMAGE) -Dkubernetes.auth.token=$(shell oc whoami -t) -DDOCKER_REGISTRY_REDHAT=$(DOCKER_REGISTRY_REDHAT) -DTESTRUNNER_HOST=$(shell oc get routes | grep testrunner | awk '{print $$2}') -DTESTRUNNER_PORT=${_TESTRUNNER_PORT} clean test -f functional-tests/pom.xml $(ADDITIONAL_ARGUMENTS)
 .PHONY: test-functional
+
+deploy-testrunner-route:
+	oc create -f ./functional-tests/src/test/resources/eap7-testrunner-service.json
+	oc create -f ./functional-tests/src/test/resources/eap7-testrunner-route.json
+.PHONY: deploy-testrunner-route
 
 test-unit:
 	$(MVN_COMMAND) clean test -f modules/os-datagrid-online-services-configuration/pom.xml $(ADDITIONAL_ARGUMENTS)
@@ -214,10 +213,10 @@ clean-docker:
 clean: clean-docker clean-maven stop-openshift
 .PHONY: clean
 
-test-ci: clean test-unit start-openshift-with-catalog build-image push-image-to-local-openshift test-functional
+test-ci: start-openshift-with-catalog prepare-openshift-project build-image push-image-to-local-openshift test-functional
 .PHONY: test-ci
 
-test-remote: clean prepare-remote-openshift test-functional
+test-remote: clean prepare-openshift-project test-functional
 .PHONY: test-remote-openshift
 
 clean-ci: clean-docker stop-openshift #avoid cleaning Maven as we need results to be reported by the job
