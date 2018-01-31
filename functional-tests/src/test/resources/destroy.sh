@@ -29,7 +29,6 @@ oc delete all,secrets,sa,templates,configmaps,daemonsets,clusterroles,rolebindin
 oc delete all,secrets,sa,templates,configmaps,daemonsets,clusterroles,rolebindings,serviceaccounts --selector=template=shared-memory-service || true
 oc delete template caching-service || true
 oc delete template shared-memory-service || true
-oc delete template testrunner-service-and-route || true
 oc delete service testrunner || true
 oc delete route testrunner || true
 

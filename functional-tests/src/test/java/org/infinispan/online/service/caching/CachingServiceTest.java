@@ -14,7 +14,6 @@ import org.infinispan.online.service.endpoint.RESTTester;
 import org.infinispan.online.service.scaling.ScalingTester;
 import org.infinispan.online.service.utils.DeploymentHelper;
 import org.infinispan.online.service.utils.OpenShiftClientCreator;
-import org.infinispan.online.service.utils.OpenShiftCommandlineClient;
 import org.infinispan.online.service.utils.OpenShiftHandle;
 import org.infinispan.online.service.utils.ReadinessCheck;
 import org.infinispan.online.service.utils.TrustStore;
@@ -105,7 +104,6 @@ public class CachingServiceTest {
       restTester.testIfEndpointIsProtected(restService);
    }
 
-   @Ignore //enable after trying in real OpenShift installation, with "oc cluster up" the client sees all pods even from outside OpenShift
    @Test
    public void hotrod_should_see_all_pods() throws MalformedURLException {
       List<Pod> pods = handle.getPodsWithLabel("application", "caching-service-app");

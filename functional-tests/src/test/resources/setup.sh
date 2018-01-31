@@ -8,8 +8,6 @@ oc delete all,secrets,sa,templates,configmaps,daemonsets,clusterroles,rolebindin
 oc delete all,secrets,sa,templates,configmaps,daemonsets,clusterroles,rolebindings,serviceaccounts --selector=template=shared-memory-service || true
 oc delete template caching-service || true
 oc delete template shared-memory-service || true
-oc delete template testrunner-service-and-route || true
-oc delete route testrunner || true
 
 echo "---- Creating Caching Service for test ----"
 echo "Current dir $PWD"
@@ -17,8 +15,6 @@ echo "Using image $IMAGE_NAME"
 
 oc create -f ../templates/caching-service.json
 oc create -f ../templates/shared-memory-service.json
-oc create -f ./src/test/resources/eap7-testrunner-service.json
-oc create -f ./src/test/resources/eap7-testrunner-route.json
 
 oc process caching-service -p IMAGE=${IMAGE_NAME} -p APPLICATION_USER=test \
 -p APPLICATION_USER_PASSWORD=test -p KEYSTORE_PASSWORD=test99 | oc create -f -
