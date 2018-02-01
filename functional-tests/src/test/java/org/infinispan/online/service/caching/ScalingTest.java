@@ -10,7 +10,6 @@ import org.infinispan.online.service.utils.OpenShiftCommandlineClient;
 import org.infinispan.online.service.utils.OpenShiftClientCreator;
 import org.infinispan.online.service.utils.OpenShiftHandle;
 import org.infinispan.online.service.utils.ReadinessCheck;
-import org.infinispan.online.service.utils.TrustStore;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.InSequence;
@@ -27,8 +26,6 @@ public class ScalingTest {
 
    private static final String SERVICE_NAME = "caching-service";
 
-   String trustStoreDir = System.getProperty("jboss.server.base.dir") +  "/data";
-   HotRodTester hotRodTester = new HotRodTester(SERVICE_NAME, trustStoreDir);
    ScalingTester scalingTester = new ScalingTester();
    OpenShiftCommandlineClient commandlineClient = new OpenShiftCommandlineClient();
 
@@ -58,8 +55,7 @@ public class ScalingTest {
    @InSequence(2)
    @Test
    public void should_discover_new_cluster_members_when_scaling_up() throws Exception {
-
-      TrustStore.create(trustStoreDir, SERVICE_NAME, client);
+      HotRodTester hotRodTester = new HotRodTester(SERVICE_NAME, client);
       URL hotRodService = handle.getServiceWithName("caching-service-app-hotrod");
       scalingTester.waitForClusterToForm(hotRodService, hotRodTester);
    }

@@ -8,18 +8,16 @@ import static org.junit.Assert.assertEquals;
 
 import java.net.InetSocketAddress;
 import java.net.URL;
-import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import io.fabric8.openshift.client.OpenShiftClient;
 import org.infinispan.client.hotrod.CacheTopologyInfo;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.configuration.Configuration;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.SaslQop;
-import org.infinispan.online.service.utils.TestObjectCreator;
 import org.infinispan.online.service.utils.TrustStore;
 
 import io.fabric8.kubernetes.api.model.Pod;
@@ -27,12 +25,12 @@ import io.fabric8.kubernetes.api.model.Pod;
 public class HotRodTester implements EndpointTester {
 
    private final String serviceName;
-   private final String trustStorePath;
    private String hotRodKey = "hotRodKey";
+   private TrustStore trustStore;
 
-   public HotRodTester(String serviceName, String trustStoreDir) {
+   public HotRodTester(String serviceName, OpenShiftClient client) {
       this.serviceName = serviceName;
-      this.trustStorePath = TrustStore.getPath(trustStoreDir, serviceName);
+      trustStore = new TrustStore(client, serviceName);
    }
 
    public void clear(URL urlToService) {
@@ -104,7 +102,7 @@ public class HotRodTester implements EndpointTester {
          .port(urlToService.getPort())
          .security()
          .ssl().enabled(true)
-         .trustStoreFileName(trustStorePath)
+         .trustStoreFileName(trustStore.getPath())
          .trustStorePassword(TrustStore.TRUSTSTORE_PASSWORD)
          .authentication().enabled(authenticate)
          .username("test")
