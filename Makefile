@@ -1,7 +1,6 @@
 DEV_IMAGE_ORG = jboss-dataservices
 DOCKER_REGISTRY_ENGINEERING =
 DOCKER_REGISTRY_REDHAT =
-TEST_IMAGE_NAME = datagrid-online-services:dev
 DEV_IMAGE_NAME = datagrid-online-services-dev
 ADDITIONAL_ARGUMENTS =
 
@@ -10,12 +9,10 @@ ifneq ($(CE_DOCKER),)
 DOCKER_REGISTRY_ENGINEERING = docker-registry.engineering.redhat.com
 DOCKER_REGISTRY_REDHAT = registry.access.redhat.com/
 DEV_IMAGE_FULL_NAME = $(DOCKER_REGISTRY_ENGINEERING)/$(DEV_IMAGE_ORG)/$(DEV_IMAGE_NAME)
-TEST_IMAGE_FULL_NAME = $(DOCKER_REGISTRY_ENGINEERING)/$(DEV_IMAGE_ORG)/$(TEST_IMAGE_NAME)
 IMAGE_FULL_NAME = $(DOCKER_REGISTRY_ENGINEERING)/$(DEV_IMAGE_ORG)/$(IMAGE_NAME)
 CONCREATE_CMD = concreate generate --overrides=overrides.yaml --target target-docker;
 else
 DEV_IMAGE_FULL_NAME = $(DEV_IMAGE_ORG)/$(DEV_IMAGE_NAME)
-TEST_IMAGE_FULL_NAME = $(DEV_IMAGE_ORG)/$(TEST_IMAGE_NAME)
 CONCREATE_CMD = concreate generate --target target-docker;
 endif
 
@@ -36,8 +33,8 @@ APB_COMMAND = docker run --rm --privileged -v `pwd`:/mnt -v ${HOME}/.kube:/.kube
 
 _TEST_PROJECT = myproject
 
-#Set variables for remote openshift when _OPENSHIFT_MASTER is defined
-ifeq ($(_OPENSHIFT_MASTER),)
+#Set variables for remote openshift when OPENSHIFT_ONLINE_REGISTRY is defined
+ifeq ($(OPENSHIFT_ONLINE_REGISTRY),)
 _OPENSHIFT_MASTER = https://127.0.0.1:8443
 _DOCKER_REGISTRY = "$(shell oc get svc/docker-registry -n default -o yaml | grep 'clusterIP:' | awk '{print $$2}'):5000"
 _IMAGE = $(_DOCKER_REGISTRY)/$(_TEST_PROJECT)/$(DEV_IMAGE_NAME)
@@ -46,12 +43,12 @@ _OPENSHIFT_USERNAME = developer
 _OPENSHIFT_PASSWORD = developer
 _TESTRUNNER_PORT = 80
 else
-_DOCKER_REGISTRY = docker-registry.engineering.redhat.com
-_IMAGE = $(TEST_IMAGE_FULL_NAME)
-_OPENSHIFT_USERNAME = newadmin
-_OPENSHIFT_PASSWORD = redhat
+_DOCKER_REGISTRY = $(OPENSHIFT_ONLINE_REGISTRY)
+_IMAGE = $(_DOCKER_REGISTRY)/$(_TEST_PROJECT)/$(DEV_IMAGE_NAME)
 _TESTRUNNER_PORT = 80
 endif
+
+_DEV_IMAGE_STREAM = $(DEV_IMAGE_NAME):latest
 
 # This username and password is hardcoded (and base64 encoded) in the Ansible
 # Service Broker template
@@ -81,9 +78,6 @@ prepare-openshift-project: clean-openshift
 .PHONY: prepare-openshift-project
 
 clean-openshift:
-	@echo "---- Login ----"
-	oc login $(_OPENSHIFT_MASTER) -u $(_OPENSHIFT_USERNAME) -p $(_OPENSHIFT_PASSWORD)
-
 	@echo "---- Deleting projects ----"
 	oc delete project $(_TEST_PROJECT) || true
 	( \
@@ -94,7 +88,12 @@ clean-openshift:
 	)
 .PHONY: clean-openshift
 
-start-openshift-with-catalog-and-ansible-service-broker: start-openshift-with-catalog prepare-openshift-project install-ansible-service-broker
+login-to-openshift:
+	@echo "---- Login ----"
+	oc login $(_OPENSHIFT_MASTER) -u $(_OPENSHIFT_USERNAME) -p $(_OPENSHIFT_PASSWORD)
+.PHONY: login-to-openshift
+
+start-openshift-with-catalog-and-ansible-service-broker: start-openshift-with-catalog login-to-openshift prepare-openshift-project install-ansible-service-broker
 .PHONY: start-openshift-with-catalog-and-ansible-service-broker
 
 install-ansible-service-broker:
@@ -125,15 +124,18 @@ build-image:
 	sudo docker build --force-rm -t $(DEV_IMAGE_FULL_NAME) ./target-docker/image
 .PHONY: build-image
 
-_login_to_openshift:
+_login_to_docker:
+	sudo docker login -u $(shell oc whoami) -p $(shell oc whoami -t) $(_DOCKER_REGISTRY)
+.PHONY: _login_to_docker
+
+_wait_for_local_docker_registry:
 	( \
 		until oc get pod -n default | grep docker-registry | grep "1/1" > /dev/null; do \
 			sleep 10; \
 			echo "Waiting for Docker Registry..."; \
 		done; \
 	)
-	sudo docker login -u $(shell oc whoami) -p $(shell oc whoami -t) $(_DOCKER_REGISTRY)
-.PHONY: _login_to_openshift
+.PHONY: _wait_for_local_docker_registry
 
 _add_openshift_push_permissions:
 	oc adm policy add-role-to-user system:registry $(_OPENSHIFT_USERNAME) || true
@@ -141,13 +143,20 @@ _add_openshift_push_permissions:
 	oc adm policy add-role-to-user system:image-builder $(_OPENSHIFT_USERNAME) || true
 .PHONY: _add_openshift_push_permissions
 
-push-image-to-local-openshift: _add_openshift_push_permissions _login_to_openshift
-	sudo docker tag $(DEV_IMAGE_FULL_NAME) $(_IMAGE)
-	sudo docker push $(_IMAGE)
+push-image-to-local-openshift: _add_openshift_push_permissions _wait_for_local_docker_registry _login_to_docker push-image-common
 .PHONY: push-image-to-local-openshift
 
+push-image-to-online-openshift: _login_to_docker push-image-common
+.PHONY: push-image-to-online-openshift
+
+push-image-common:
+	sudo docker tag $(DEV_IMAGE_FULL_NAME) $(_IMAGE)
+	sudo docker push $(_IMAGE)
+	oc set image-lookup $(DEV_IMAGE_NAME)
+.PHONY: push-image-common
+
 test-functional: deploy-testrunner-route
-	$(MVN_COMMAND) -Dimage=$(_IMAGE) -Dkubernetes.auth.token=$(shell oc whoami -t) -DDOCKER_REGISTRY_REDHAT=$(DOCKER_REGISTRY_REDHAT) -DTESTRUNNER_HOST=$(shell oc get routes | grep testrunner | awk '{print $$2}') -DTESTRUNNER_PORT=${_TESTRUNNER_PORT} clean test -f functional-tests/pom.xml $(ADDITIONAL_ARGUMENTS)
+	$(MVN_COMMAND) -Dimage=$(_DEV_IMAGE_STREAM) -Dkubernetes.auth.token=$(shell oc whoami -t) -DDOCKER_REGISTRY_REDHAT=$(DOCKER_REGISTRY_REDHAT) -DTESTRUNNER_HOST=$(shell oc get routes | grep testrunner | awk '{print $$2}') -DTESTRUNNER_PORT=${_TESTRUNNER_PORT} clean test -f functional-tests/pom.xml $(ADDITIONAL_ARGUMENTS)
 .PHONY: test-functional
 
 deploy-testrunner-route:
@@ -184,16 +193,18 @@ clear-templates:
 .PHONY: clear-templates
 
 test-caching-service-manually:
+	oc set image-lookup $(DEV_IMAGE_NAME)
 	oc process caching-service -p APPLICATION_USER=test \
-	-p APPLICATION_USER_PASSWORD=test -p IMAGE=$(_IMAGE) -p KEYSTORE_PASSWORD=test99 | oc create -f -
+	-p APPLICATION_USER_PASSWORD=test -p IMAGE=$(_DEV_IMAGE_STREAM) -p KEYSTORE_PASSWORD=test99 | oc create -f -
 	oc expose svc/caching-service-app-http || true
 	oc expose svc/caching-service-app-hotrod || true
 	oc get routes
 .PHONY: test-caching-service-manually
 
 test-shared-memory-service-manually:
+	oc set image-lookup $(DEV_IMAGE_NAME)
 	oc process shared-memory-service -p APPLICATION_USER=test \
-	-p APPLICATION_USER_PASSWORD=test -p IMAGE=$(_IMAGE)  -p KEYSTORE_PASSWORD=test99 | oc create -f -
+	-p APPLICATION_USER_PASSWORD=test -p IMAGE=$(_DEV_IMAGE_STREAM) -p KEYSTORE_PASSWORD=test99 | oc create -f -
 	oc expose svc/shared-memory-service-app-http || true
 	oc expose svc/shared-memory-service-app-hotrod || true
 	oc get routes
@@ -213,11 +224,12 @@ clean-docker:
 clean: clean-docker clean-maven stop-openshift
 .PHONY: clean
 
-test-ci: start-openshift-with-catalog prepare-openshift-project build-image push-image-to-local-openshift test-functional
+test-ci: clean test-unit start-openshift-with-catalog login-to-openshift prepare-openshift-project build-image push-image-to-local-openshift test-functional
 .PHONY: test-ci
 
-test-remote: clean prepare-openshift-project test-functional
-.PHONY: test-remote-openshift
+#Before running this target, login to the remote OpenShift from console in whatever way recommended by the provider
+test-remote: clean-docker clean-maven prepare-openshift-project build-image push-image-to-online-openshift test-functional
+.PHONY: test-online
 
 clean-ci: clean-docker stop-openshift #avoid cleaning Maven as we need results to be reported by the job
 .PHONY: clean-ci

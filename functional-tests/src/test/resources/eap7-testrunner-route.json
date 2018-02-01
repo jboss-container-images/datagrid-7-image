@@ -6,8 +6,7 @@
          "openshift.io/host.generated": "true",
          "haproxy.router.openshift.io/timeout": "5m"
       },
-      "name": "testrunner",
-      "namespace": "myproject"
+      "name": "testrunner"
    },
    "spec": {
       "port": {
