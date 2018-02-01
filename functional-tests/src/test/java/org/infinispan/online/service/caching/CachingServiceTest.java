@@ -16,7 +16,6 @@ import org.infinispan.online.service.utils.DeploymentHelper;
 import org.infinispan.online.service.utils.OpenShiftClientCreator;
 import org.infinispan.online.service.utils.OpenShiftHandle;
 import org.infinispan.online.service.utils.ReadinessCheck;
-import org.infinispan.online.service.utils.TrustStore;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -38,12 +37,11 @@ public class CachingServiceTest {
 
    URL hotRodService;
    URL restService;
-   String trustStoreDir = System.getProperty("jboss.server.base.dir") +  "/data";
-   HotRodTester hotRodTester = new HotRodTester(SERVICE_NAME, trustStoreDir);
-   RESTTester restTester = new RESTTester(SERVICE_NAME, trustStoreDir);
+   OpenShiftClient client = OpenShiftClientCreator.getClient();
+   HotRodTester hotRodTester = new HotRodTester(SERVICE_NAME, client);
+   RESTTester restTester = new RESTTester(SERVICE_NAME, client);
 
    ReadinessCheck readinessCheck = new ReadinessCheck();
-   OpenShiftClient client = OpenShiftClientCreator.getClient();
    OpenShiftHandle handle = new OpenShiftHandle(client);
 
    @Deployment
@@ -62,7 +60,6 @@ public class CachingServiceTest {
       readinessCheck.waitUntilAllPodsAreReady(client);
       hotRodService = handle.getServiceWithName("caching-service-app-hotrod");
       restService = handle.getServiceWithName("caching-service-app-http");
-      TrustStore.create(trustStoreDir, SERVICE_NAME, client);
    }
 
    @After

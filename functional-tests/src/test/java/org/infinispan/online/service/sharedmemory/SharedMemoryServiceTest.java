@@ -13,7 +13,6 @@ import org.infinispan.online.service.utils.DeploymentHelper;
 import org.infinispan.online.service.utils.OpenShiftClientCreator;
 import org.infinispan.online.service.utils.OpenShiftHandle;
 import org.infinispan.online.service.utils.ReadinessCheck;
-import org.infinispan.online.service.utils.TrustStore;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -34,11 +33,11 @@ public class SharedMemoryServiceTest {
    URL hotRodService;
    URL restService;
 
-   String trustStoreDir = System.getProperty("jboss.server.base.dir") +  "/data";
+   OpenShiftClient client = OpenShiftClientCreator.getClient();;
    ReadinessCheck readinessCheck = new ReadinessCheck();
-   HotRodTester hotRodTester = new HotRodTester(SERVICE_NAME, trustStoreDir);
-   RESTTester restTester = new RESTTester(SERVICE_NAME, trustStoreDir);
-   OpenShiftClient client;
+   HotRodTester hotRodTester = new HotRodTester(SERVICE_NAME, client);
+   RESTTester restTester = new RESTTester(SERVICE_NAME, client);
+   OpenShiftHandle handle = new OpenShiftHandle(client);
 
    @Deployment
    public static Archive<?> deploymentApp() {
@@ -53,12 +52,9 @@ public class SharedMemoryServiceTest {
 
    @Before
    public void before() throws MalformedURLException {
-      client = OpenShiftClientCreator.getClient();
-      OpenShiftHandle handle = new OpenShiftHandle(client);
       readinessCheck.waitUntilAllPodsAreReady(client);
       hotRodService = handle.getServiceWithName("shared-memory-service-app-hotrod");
       restService = handle.getServiceWithName("shared-memory-service-app-http");
-      TrustStore.create(trustStoreDir, SERVICE_NAME, client);
    }
 
    @After

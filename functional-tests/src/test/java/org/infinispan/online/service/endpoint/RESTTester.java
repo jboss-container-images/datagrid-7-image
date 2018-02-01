@@ -7,6 +7,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
+import io.fabric8.openshift.client.OpenShiftClient;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.Authentication;
 import org.eclipse.jetty.client.api.AuthenticationStore;
@@ -23,10 +24,11 @@ import org.infinispan.online.service.utils.TrustStore;
 public class RESTTester implements EndpointTester {
 
    private static String DEFAULT_CACHE = "default";
-   private final String trustStorePath;
 
-   public RESTTester(String serviceName, String trustStoreDir) {
-      this.trustStorePath = TrustStore.getPath(trustStoreDir, serviceName);
+   private TrustStore trustStore;
+
+   public RESTTester(String serviceName, OpenShiftClient client) {
+      trustStore = new TrustStore(client, serviceName);
    }
 
    public void testBasicEndpointCapabilities(URL urlToService) {
@@ -149,9 +151,9 @@ public class RESTTester implements EndpointTester {
    private HttpClient httpClient(String url, boolean authenticate) throws Exception {
       HttpClient httpClient;
       SslContextFactory sslContextFactory = new SslContextFactory();
-      sslContextFactory.setTrustStorePath(trustStorePath);
+      sslContextFactory.setTrustStorePath(trustStore.getPath());
       sslContextFactory.setTrustStorePassword(new String(TrustStore.TRUSTSTORE_PASSWORD));
-      sslContextFactory.setKeyStorePath(trustStorePath);
+      sslContextFactory.setKeyStorePath(trustStore.getPath());
       sslContextFactory.setKeyStorePassword(new String(TrustStore.TRUSTSTORE_PASSWORD));
       httpClient = new HttpClient(sslContextFactory);
       httpClient.setConnectTimeout(TimeUnit.SECONDS.toMillis(60));
