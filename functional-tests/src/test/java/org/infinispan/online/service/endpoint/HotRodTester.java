@@ -70,7 +70,7 @@ public class HotRodTester implements EndpointTester {
          .sorted()
          .collect(Collectors.toList());
       List<String> cacheNodeIPs = topology.getSegmentsPerServer().keySet().stream()
-         .map(addr -> ((InetSocketAddress)addr).getAddress().getHostAddress())
+         .map(addr -> ((InetSocketAddress)addr).getHostName())
          .sorted()
          .collect(Collectors.toList());
 
