@@ -128,6 +128,10 @@ _login_to_docker:
 	sudo docker login -u $(shell oc whoami) -p $(shell oc whoami -t) $(_DOCKER_REGISTRY)
 .PHONY: _login_to_docker
 
+_login_to_openshift:
+	oc login -u $(_OPENSHIFT_USERNAME) -p $(_OPENSHIFT_PASSWORD)
+.PHONY: _login_to_openshift
+
 _wait_for_local_docker_registry:
 	( \
 		until oc get pod -n default | grep docker-registry | grep "1/1" > /dev/null; do \
@@ -143,10 +147,10 @@ _add_openshift_push_permissions:
 	oc adm policy add-role-to-user system:image-builder $(_OPENSHIFT_USERNAME) || true
 .PHONY: _add_openshift_push_permissions
 
-push-image-to-local-openshift: _add_openshift_push_permissions _wait_for_local_docker_registry _login_to_docker push-image-common
+push-image-to-local-openshift: _add_openshift_push_permissions _wait_for_local_docker_registry _login_to_openshift _login_to_docker push-image-common
 .PHONY: push-image-to-local-openshift
 
-push-image-to-online-openshift: _login_to_docker push-image-common
+push-image-to-online-openshift: _login_to_openshift _login_to_docker push-image-common
 .PHONY: push-image-to-online-openshift
 
 push-image-common:
