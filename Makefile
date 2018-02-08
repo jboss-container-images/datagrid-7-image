@@ -288,3 +288,17 @@ run-docker: build-image
 test-capacity:
 	$(MVN_COMMAND) clean test -f capacity-tests/pom.xml $(ADDITIONAL_ARGUMENTS)
 .PHONY: test-capacity
+
+run-caching-service-locally: stop-openshift start-openshift-with-catalog login-to-openshift prepare-openshift-project build-image push-image-to-local-openshift install-templates test-caching-service-manually
+.PHONY: run-caching-service-locally
+
+run-shared-memory-service-locally: stop-openshift start-openshift-with-catalog login-to-openshift prepare-openshift-project build-image push-image-to-local-openshift install-templates test-shared-memory-service-manually
+.PHONY: run-caching-service-locally
+
+#Before running this target, login to the remote OpenShift from console in whatever way recommended by the provider, make sure you specify the _TEST_PROJECT and OPENSHIFT_ONLINE_REGISTRY variables
+run-caching-service-remotely: clean-docker clean-maven prepare-openshift-project build-image push-image-to-online-openshift install-templates test-caching-service-manually
+.PHONY: test-online
+
+#Before running this target, login to the remote OpenShift from console in whatever way recommended by the provider, make sure you specify the _TEST_PROJECT and OPENSHIFT_ONLINE_REGISTRY variables
+run-shared-memory-service-remotely: clean-docker clean-maven prepare-openshift-project build-image push-image-to-online-openshift install-templates test-shared-memory-service-manually
+.PHONY: test-online
