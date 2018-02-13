@@ -187,7 +187,7 @@
                            },
                            {
                               "name": "KEYSTORE_PASSWORD",
-                              "value": "${KEYSTORE_PASSWORD}"
+                              "value": "${APPLICATION_NAME}"
                            },
                            {
                               "name": "NODE_NAME",
@@ -307,7 +307,7 @@
                            },
                            {
                               "name": "KEYSTORE_PASSWORD",
-                              "value": "${KEYSTORE_PASSWORD}"
+                              "value": "${APPLICATION_NAME}"
                            }
                         ],
                         "command": [
@@ -410,13 +410,6 @@
          "name": "APPLICATION_USER_PASSWORD",
          "displayName": "Client Password",
          "description": "Password for client applications",
-         "generate": "expression",
-         "from": "[a-zA-Z0-9]{16}"
-      },
-      {
-         "name": "KEYSTORE_PASSWORD",
-         "displayName": "Java Keystore Password",
-         "description": "Password for the created java keystore",
          "generate": "expression",
          "from": "[a-zA-Z0-9]{16}"
       }
