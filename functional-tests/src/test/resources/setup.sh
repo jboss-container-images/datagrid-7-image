@@ -17,7 +17,7 @@ oc create -f ../templates/caching-service.json
 oc create -f ../templates/shared-memory-service.json
 
 oc process caching-service -p IMAGE=${IMAGE_NAME} -p APPLICATION_USER=test \
--p APPLICATION_USER_PASSWORD=test -p KEYSTORE_PASSWORD=test99 | oc create -f -
+-p APPLICATION_USER_PASSWORD=test | oc create -f -
 
 oc process shared-memory-service -p IMAGE=${IMAGE_NAME} \
--p APPLICATION_USER=test -p APPLICATION_USER_PASSWORD=test -p KEYSTORE_PASSWORD=test99 | oc create -f -
+-p APPLICATION_USER=test -p APPLICATION_USER_PASSWORD=test | oc create -f -

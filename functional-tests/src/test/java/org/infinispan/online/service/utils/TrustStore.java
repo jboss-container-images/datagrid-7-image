@@ -30,13 +30,6 @@ public class TrustStore {
       }
    }
 
-   public TrustStore(OpenShiftClient client, String trustStoreDir, String serviceName) {
-      this.client = client;
-      this.serviceName = serviceName;
-      this.trustStoreDir = trustStoreDir;
-      create();
-   }
-
    public String getPath() {
       Path currentRelativePath = Paths.get(trustStoreDir);
       String absolutePath = currentRelativePath.toAbsolutePath().toString();
