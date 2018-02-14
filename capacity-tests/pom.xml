@@ -10,7 +10,7 @@
    <properties>
       <maven.compiler.source>1.8</maven.compiler.source>
       <maven.compiler.target>1.8</maven.compiler.target>
-      <version.infinispan.bom>8.5.0.ER2-redhat-2</version.infinispan.bom>
+      <version.infinispan.bom>8.5.0.ER3-redhat-1</version.infinispan.bom>
       <version.junit>4.12</version.junit>
       <version.jmh>1.20</version.jmh>
    </properties>
