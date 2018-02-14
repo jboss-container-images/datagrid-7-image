@@ -183,7 +183,7 @@
                            },
                            {
                               "name": "KEYSTORE_FILE",
-                              "value": "/var/run/secrets/java.io/keystores/${APPLICATION_NAME}.jks"
+                              "value": "/var/run/secrets/java.io/keystores/${APPLICATION_NAME}.p12"
                            },
                            {
                               "name": "KEYSTORE_PASSWORD",
@@ -291,7 +291,7 @@
                            },
                            {
                               "name": "KEYSTORE_FILE",
-                              "value": "/var/run/secrets/java.io/keystores/${APPLICATION_NAME}.jks"
+                              "value": "/var/run/secrets/java.io/keystores/${APPLICATION_NAME}.p12"
                            },
                            {
                               "name": "KEYSTORE_PASSWORD",
@@ -303,7 +303,7 @@
                         ],
                         "args": [
                            "-c",
-                           "rm -f $KEYSTORE_FILE && openssl pkcs12 -export -inkey $TLS_KEY_FILE -in $CRT_FILE -out $KEYSTORE_PKCS12 -password pass:$KEYSTORE_PASSWORD && keytool -importkeystore -noprompt -srckeystore $KEYSTORE_PKCS12 -srcstoretype pkcs12 -destkeystore $KEYSTORE_FILE -storepass $KEYSTORE_PASSWORD -srcstorepass $KEYSTORE_PASSWORD"
+                           "rm -f $KEYSTORE_FILE $KEYSTORE_PKCS12 && openssl pkcs12 -export -inkey $TLS_KEY_FILE -in $CRT_FILE -out $KEYSTORE_PKCS12 -password pass:$KEYSTORE_PASSWORD && keytool -importkeystore -noprompt -srckeystore $KEYSTORE_PKCS12 -srcstoretype pkcs12 -destkeystore $KEYSTORE_FILE -deststoretype pkcs12 -storepass $KEYSTORE_PASSWORD -srcstorepass $KEYSTORE_PASSWORD"
                         ],
                         "volumeMounts": [
                            {

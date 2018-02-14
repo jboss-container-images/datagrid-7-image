@@ -33,7 +33,7 @@ public class TrustStore {
    public String getPath() {
       Path currentRelativePath = Paths.get(trustStoreDir);
       String absolutePath = currentRelativePath.toAbsolutePath().toString();
-      return String.format("%s/%s.jks", absolutePath, serviceName);
+      return String.format("%s/%s.p12", absolutePath, serviceName);
    }
 
    private KeyStore create() {
@@ -43,7 +43,7 @@ public class TrustStore {
       try (InputStream input = Base64.getDecoder().wrap(new ByteArrayInputStream(certSecret.getBytes(StandardCharsets.UTF_8)));
            FileOutputStream output = new FileOutputStream(getPath())) {
 
-         KeyStore trustStore = KeyStore.getInstance("JKS");
+         KeyStore trustStore = KeyStore.getInstance("PKCS12");
          CertificateFactory cf = CertificateFactory.getInstance("X.509");
          Certificate certificate = cf.generateCertificate(input);
          trustStore.load(null, null);

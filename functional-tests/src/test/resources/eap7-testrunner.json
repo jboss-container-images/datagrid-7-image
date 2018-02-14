@@ -76,8 +76,8 @@
                   "value": "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt"
                },
                {
-                  "name": "TRUSTSTORE_JKS",
-                  "value": "/var/run/secrets/java.io/keystores/caching-service.jks"
+                  "name": "TRUSTSTORE_FILE",
+                  "value": "/var/run/secrets/java.io/keystores/caching-service.p12"
                },
                {
                   "name": "TRUSTSTORE_PASSWORD",
@@ -89,7 +89,7 @@
             ],
             "args": [
                "-c",
-               "rm -f $TRUSTSTORE_JKS && csplit -z -f crt- $CA_BUNDLE '/-----BEGIN CERTIFICATE-----/' '{*}' && for file in crt-*; do keytool -import -noprompt -keystore $TRUSTSTORE_JKS -file $file -storepass $TRUSTSTORE_PASSWORD -alias service-$file; done"
+               "rm -f $TRUSTSTORE_FILE && csplit -z -f crt- $CA_BUNDLE '/-----BEGIN CERTIFICATE-----/' '{*}' && for file in crt-*; do keytool -import -noprompt -storetype pkcs12 -keystore $TRUSTSTORE_FILE -file $file -storepass $TRUSTSTORE_PASSWORD -alias service-$file; done"
             ],
             "volumeMounts": [
                {
