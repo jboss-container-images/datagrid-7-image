@@ -1,12 +1,12 @@
 name: datagrid-online-services-apb
 image: jboss-dataservices/datagrid-online-services-apb
-description: Red Hat JBoss Data Grid Online Services
+description: Red Hat Data Grid Online Services
 bindable: True
 async: optional
 metadata:
    documentationUrl: https://www.redhat.com/en/technologies/jboss-middleware/data-grid
    longDescription: Red Hat JBoss Data Grid Online Services offer tailored experience for Caching (with optional persistence) for OpenShift users.
-   displayName: Red Hat JBoss Data Grid Online Services
+   displayName: Red Hat Data Grid Online Services
    console.openshift.io/iconClass: icon-infinispan
 plans:
    - name: caching-service
@@ -27,7 +27,7 @@ plans:
          title: Image
          required: true
    - name: shared-memory-service
-     description: Provides a standalone JBoss Data Grid Caching Service (a high performance, scalable, key/value data grid solution) with persistence.
+     description: Provides a standalone Red Hat Data Grid Caching Service (a high performance, scalable, key/value data grid solution) with persistence.
      free: False
      metadata:
        displayName: Shared Memory Service
