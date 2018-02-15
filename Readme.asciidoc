@@ -1,11 +1,11 @@
-= Red Hat JBoss Data Grid Online Services
+= Red Hat Data Grid Online Services
 
-Red Hat JBoss Data Grid (JDG) Online Services consists of a multiple services:
+Red Hat Data Grid (RHDG) Online Services consists of a multiple services:
 
-- Caching Service - In this service, JBoss Data Grid is configured as an in-memory caching service without persistence. Data in the cache will be lost if the service is stopped or restarted, and therefore, it should not be used as a permanent store for data. It can be used to improve your application’s response time, by keeping frequently and recently accessed data in a high speed in-memory store.
-- Shared Memory Service - In this image, JBoss Data Grid is configured as a shared memory service with fault-tolerance. That means any data stored by the service will be preserved across restarts. Fault-tolerance is achieved by replicating data across multiple nodes. The data is copied to a specific number of nodes in the cluster using the `owners` setting. This ensures that, in the case of failure, the grid will not lose data as long as the number of failed nodes is less than the number of copies (owners). This also works when nodes are shutdown or restarted manually.
+- Caching Service - In this service, Red Hat Data Grid is configured as an in-memory caching service without persistence. Data in the cache will be lost if the service is stopped or restarted, and therefore, it should not be used as a permanent store for data. It can be used to improve your application’s response time, by keeping frequently and recently accessed data in a high speed in-memory store.
+- Shared Memory Service - In this image, Red Hat Data Grid is configured as a shared memory service with fault-tolerance. That means any data stored by the service will be preserved across restarts. Fault-tolerance is achieved by replicating data across multiple nodes. The data is copied to a specific number of nodes in the cluster using the `owners` setting. This ensures that, in the case of failure, the grid will not lose data as long as the number of failed nodes is less than the number of copies (owners). This also works when nodes are shutdown or restarted manually.
 
-The services are based on https://www.redhat.com/en/technologies/jboss-middleware/data-grid[JBoss Data Grid] technology and they expose various endpoints and configurations depending on the use case.
+The services are based on https://www.redhat.com/en/technologies/jboss-middleware/data-grid[Red Hat Data Grid] technology and they expose various endpoints and configurations depending on the use case.
 
 == Detailed Cache Features
 

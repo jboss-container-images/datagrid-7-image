@@ -1,13 +1,13 @@
 schema_version: 1
 name: "jboss-dataservices/datagrid-online-services"
-description: "Red Hat JBoss Data Grid Services"
+description: "Red Hat Data Grid Services"
 version: "1.0"
 from: "jboss-datagrid-7/datagrid72-openshift:dev"
 labels:
     - name: "io.k8s.description"
       value: "Provides a scalable in-memory caching solution for fast access to large volumes of data."
     - name: "io.k8s.display-name"
-      value: "JBoss Data Grid Online Services"
+      value: "Red Hat Data Grid Online Services"
     - name: "io.openshift.tags"
       value: "datagrid,java,jboss,xpaas"
 envs:
