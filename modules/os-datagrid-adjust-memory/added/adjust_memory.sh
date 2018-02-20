@@ -15,9 +15,11 @@ function configure() {
    if [ ${USE_FIXED_MEMORY_SIZE} == "true" ]; then
        NATIVE_MEMORY_PERCENTAGE_OVERHEAD=$(expr ${CONTAINER_MAX_MEMORY} * ${JVM_NATIVE_PERCENTAGE_OVERHEAD} / 100)
        EVICTION_TOTAL_MEMORY_B=$(expr ${CONTAINER_MAX_MEMORY} - ${JVM_NATIVE_MB} * 1024 * 1024 - ${FIXED_MEMORY_XMX} * 1024 * 1024 - ${NATIVE_MEMORY_PERCENTAGE_OVERHEAD})
-       echo "CONTAINER MEM: ${CONTAINER_MAX_MEMORY}"
-       echo "EVICTION_TOTAL_MEMORY_B: ${EVICTION_TOTAL_MEMORY_B}"
-       echo "NATIVE_MEMORY_PERCENTAGE_OVERHEAD: ${NATIVE_MEMORY_PERCENTAGE_OVERHEAD}"
+       if [ "${DEBUG}" == "true" ]; then
+            echo "CONTAINER MEM: ${CONTAINER_MAX_MEMORY}"
+            echo "EVICTION_TOTAL_MEMORY_B: ${EVICTION_TOTAL_MEMORY_B}"
+            echo "NATIVE_MEMORY_PERCENTAGE_OVERHEAD: ${NATIVE_MEMORY_PERCENTAGE_OVERHEAD}"
+       fi
        export EVICTION_TOTAL_MEMORY_B
    fi
 }
@@ -25,9 +27,9 @@ function configure() {
 function source_java_run_scripts() {
     local java_scripts_dir="/opt/run-java"
     # set CONTAINER_MAX_MEMORY and CONTAINER_CORE_LIMIT
-    source "${java_scripts_dir}/container-limits"
+    source "${java_scripts_dir}/container-limits" >/dev/null 2>&1
     # load java options functions
-    source "${java_scripts_dir}/java-default-options"
+    source "${java_scripts_dir}/java-default-options" >/dev/null 2>&1
 }
 
 source_java_run_scripts
@@ -55,7 +57,7 @@ adjust_java_options() {
     local options="$@"
     local remove_xms
     local java_scripts_dir="/opt/run-java"
-    local java_options="$(source "${java_scripts_dir}/java-default-options") $(additional_options)"
+    local java_options="$("${java_scripts_dir}/java-default-options") $(additional_options)"
     local unsupported="$(unsupported_options)"
 
     # Off-heap requires a fixed amount of heap memory. The rest is stored off-heap.

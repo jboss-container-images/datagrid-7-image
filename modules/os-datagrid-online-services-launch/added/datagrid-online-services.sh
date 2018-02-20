@@ -4,10 +4,14 @@ function checkOptionalParamExists() {
    var=$1
    val=${!var}
    if [ -z ${val} ]; then
-       echo "${var} param not set, falling back to '$2'" >&2
+       if [ "${DEBUG}" == "true" ]; then
+            echo "${var} param not set, falling back to '$2'" >&2
+       fi
        echo $2
    else
-       echo "$var=$val" >&2
+       if [ "${DEBUG}" == "true" ]; then
+            echo "$var=$val" >&2
+       fi
    fi
    echo ${val}
 }
