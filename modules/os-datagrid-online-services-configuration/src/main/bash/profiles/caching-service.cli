@@ -1,4 +1,4 @@
-embed-server --server-config=services.xml --std-out=echo
+embed-server --server-config=services.xml --std-out=$std_out
 
 if (outcome == success) of /subsystem=datagrid-infinispan-endpoint/rest-connector=rest-connector/authentication=AUTHENTICATION:read-resource
    /subsystem=datagrid-infinispan-endpoint/rest-connector=rest-connector/authentication=AUTHENTICATION:remove

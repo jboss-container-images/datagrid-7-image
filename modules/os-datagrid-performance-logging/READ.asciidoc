@@ -7,5 +7,5 @@ that it can easily be plugged off (just remove it).
 Activation
 ==========
 
-In order to activate it, you need to specify `USE_PERFORMANCE_LOGGING=true` environment variable. Note that it's hidden
+In order to activate it, you need to specify `DEBUG=true` environment variable. Note that it's hidden
 from `image.yaml` and it has been done on purpose.
