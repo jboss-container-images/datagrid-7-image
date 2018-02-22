@@ -75,31 +75,14 @@ Both Caching and Shared Memory services define a list of parameters, which have 
 
 Once you instantiate one of the services, you might want to connect to it using a Hot Rod or REST client.
 
-The easiest way to do this is to use the https://github.com/jboss-developer/jboss-jdg-quickstarts/tree/jdg-7.2.x/caching-service[JDG Caching Service Quickstart].
- The most important thing to remember is that all services use authentication.
- The same credentials that were used while creating a service need to be used
- in the client application. Here's an example:
+Both endpoints use encryption as well as authentication. TLS certificates for the server are generated automatically
+ by OpenShift. A client deployed inside OpenShift obtains them automatically (Kubernetes puts them in `/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt`). However when a client is deployed outside of the cloud,
+ the easiest to obtain them is to use `oc` client. The last part is authentication - both user name and password
+ are specified as the Caching Template parameters.
 
-
-```
-Configuration c = new ConfigurationBuilder()
-      .addServer()
-          .host("caching-service-app")
-          .security().authentication().enable()
-            .username("test")
-            .password("test")
-            .realm("ApplicationRealm")
-            .serverName("caching-service")
-            .saslMechanism("DIGEST-MD5")
-            .saslQop(SaslQop.AUTH)
-      .build();
-
-RemoteCacheManager remoteCacheManager = new RemoteCacheManager(c);
-RemoteCache<String, String> cache = remoteCacheManager.getCache();
-```
-
-The above template is just an example. The quickstart covers more details on connecting to the existing
- JDG Online Service.
+The https://github.com/jboss-developer/jboss-jdg-quickstarts/tree/jdg-7.2.x/caching-service[Caching Service quickstart] is
+ the easiest way to get everything up and running. It shows how to deploy a client application into the cloud (using
+ https://maven.fabric8.io/[Fabric8 Maven Plugin]) as well how to obtain a certificate from the `oc` client.
 
 == What's next?
 
@@ -118,6 +101,8 @@ This repository has the following structure:
       +-- templates - OpenShift templates for this service
       +-- modules - Modules used for the image
       +-- functional-tests - Full end-to-end tests with Arquillian Cube
+      +-- documentation - Resources for `this` Github page
+      +-- capacity-tests - A set of capacity tests for calibrating memory settings
 ```
 
 The `image.yaml` uses a Python framework called http://concreate.readthedocs.io/en/develop/[Concreate] to build an image. The easiest way to start the build is to invoke `concreate image.yaml target` and invoke a standard Docker build from the `target` directory.

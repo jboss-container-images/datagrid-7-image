@@ -11,7 +11,7 @@
          "tags": "database,datagrid,jboss",
          "openshift.io/display-name": "Red Hat Cache Service",
          "openshift.io/provider-display-name": "Red Hat, Inc.",
-         "openshift.io/documentation-url": "https://www.redhat.com/en/technologies/jboss-middleware/data-grid",
+         "openshift.io/documentation-url": "https://github.com/jboss-container-images/jboss-dataservices-image/blob/dataservices-dev/Readme.asciidoc",
          "openshift.io/long-description": "In this service, Red Hat Data Grid is configured as an in-memory caching service without persistence. Data in the cache will be lost if the service is stopped or restarted, and therefore, it should not be used as a permanent store for data.\nIt can be used to improve your application’s response time, by keeping frequently and recently accessed data in a high speed in-memory store.",
          "openshift.io/support-url": "https://www.redhat.com/en/services/support"
       },
