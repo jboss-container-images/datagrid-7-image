@@ -4,7 +4,7 @@ description: Red Hat Data Grid Online Services
 bindable: True
 async: optional
 metadata:
-   documentationUrl: https://www.redhat.com/en/technologies/jboss-middleware/data-grid
+   documentationUrl: https://github.com/jboss-container-images/jboss-dataservices-image/blob/dataservices-dev/Readme.asciidoc
    longDescription: Red Hat JBoss Data Grid Online Services offer tailored experience for Caching (with optional persistence) for OpenShift users.
    displayName: Red Hat Data Grid Online Services
    console.openshift.io/iconClass: icon-infinispan
