@@ -1,0 +1,44 @@
+= Development guide
+
+Prior to exploring this repository, it is highly advised to visit our https://docs.google.com/a/redhat.com/document/d/1gSGmytIW3u4IR1tXGmEekEa1AzhKfNvAPOAP0Fh32kQ/edit?usp=sharing[Contributing Guide].
+
+This repository has the following structure:
+
+```
++- Root
+      +-- image.yaml - Image build recipe
+      +-- Makefile - A set of useful scripts for development work
+      +-- templates - OpenShift templates for this service
+      +-- modules - Modules used for the image
+      +-- functional-tests - Full end-to-end tests with Arquillian Cube
+      +-- documentation - Resources for `this` Github page
+      +-- capacity-tests - A set of capacity tests for calibrating memory settings
+```
+
+The `image.yaml` uses a Python framework called http://concreate.readthedocs.io/en/develop/[Concreate] to build an image. The easiest way to start the build is to invoke `concreate image.yaml target` and invoke a standard Docker build from the `target` directory.
+
+The `Makefile` contains lots of small, useful scripts.
+
+In order to perform a full end-to-end test, invoke `make test-ci`. This will spin up a local OpenShift cluster, build the image, install the template, invoke end-to-end tests and kill the cluster.
+
+In order to run the functional test suite against a remote OpenShift instance, follow these steps:
+
+1. Login to the remote instance from command line using `oc`
+
+   oc login <openshift address> --token=<token>
+
+2. Set the environment variable with the adddress of the remote OpenShift docker registry
+
+   export OPENSHIFT_ONLINE_REGISTRY=<registry address>
+
+3. Invoke `make test-remote`.
+This procedure will create a new project in the remote OpenShift, build the image, push the image to the OpenShift internal registry, install the templates in the project and invoke functional tests.
+
+The `templates` directory contains a template for the Service Catalog. The easiest way to install it is to use `make install-templates-in-openshift-namespace`.
+
+The `modules` directory contains modules used in `image.yaml`. See http://concreate.readthedocs.io/en/develop/[Concreate] documentation for more details.
+
+The `functional-tests` directory contains http://arquillian.org/arquillian-cube/[Arquillian Cube tests]. The tests assume there is a running OpenShift cluster and `oc` or `kubectl` is already attached to it.
+
+Useful links:
+* Wildfly CLI guide: https://developer.jboss.org/wiki/CommandLineInterface
