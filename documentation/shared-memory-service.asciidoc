@@ -1,0 +1,69 @@
+= Red Hat Shared Memory Service
+
+NOTE: This is a temporary page and very likely will change in the future. Please refer to the Red Hat Cache Service user's manual.
+
+
+In this Service, Red Hat Data Grid is configured as a shared memory service with fault-tolerance.
+ That means any data stored by the service will be preserved across restarts. Fault-tolerance is achieved
+ by replicating data across multiple nodes. The data is copied to a specific number of nodes in the cluster
+ using the `owners` setting. This ensures that, in the case of failure, the grid will not lose data as long
+ as the number of failed nodes is less than the number of copies (owners). This also works when nodes are
+ shutdown or restarted manually.
+
+The service is based on https://www.redhat.com/en/technologies/jboss-middleware/data-grid[Red Hat Data Grid] technology
+ and they expose various endpoints and configurations depending on the use case.
+
+== Detailed Cache Features
+
+The detailed configuration is tightly connected to JBoss Data Grid Cache Configuration. The service provides:
+
+- No Cache Store
+- Distributed caches (with specified number of owners) created on demand
+- Caches destroyed after idle timeout
+- No eviction
+- Authentication and encryption
+
+== Getting started
+
+Before you begin working with Red Hat Shared Memory Service, you will need a working OpenShift cluster as well as an `oc`
+ client in your `$PATH`. See  https://docs.openshift.com/online/welcome/index.html[OpenShift documentation] how to achieve this.
+
+=== Installing Red Hat Shared Memory Service into Service Catalog
+
+Red Hat Shared Memory Service is supported on OpenShift Container Platform 3.7 (and equivalents such as OpenShift Online). In order to
+ make Red Hat Shared Memory Service available in the Service Catalog, the administrator needs to add the template into the `openshift`
+ namespace. This can be done by invoking `oc create -f templates/shared-memory-service.json -n openshift`.
+
+=== Instantiating Red Hat Shared Memory Service
+
+Once the above templates are correctly installed, you can instantiate them using  the appropriate icon in the catalog.
+
+The list of parameters is explained below:
+
+.Shared Memory Service parameters
+[options="header"]
+|======================
+|Option                    |Required/Optional? |Description                                                                               |Default option
+|NAMESPACE                 |Required           |Namespace in which this service was created. Used for setting up clustering configuration.|myproject
+|APPLICATION_NAME          |Required           |Application name                                                                          |shared-memory-service-app
+|IMAGE                     |Required           |Image that will be used to bootstrap the service                                          |jboss-dataservices/datagrid-online-services
+|NUMBER_OF_INSTANCES       |Required           |Number of instances                                                                       |1
+|NUMBER_OF_OWNERS          |Optional           |Number of owners for a given piece of data                                                |2
+|TOTAL_CONTAINER_MEM       |Optional           |Total container size (both limits and requests)                                           |512
+|APPLICATION_USER          |Required           |Username used for authentication                                                          |<none>
+|APPLICATION_USER_PASSWORD |Optional           |Password used for authentication                                                          |<generated>
+|======================
+
+=== Creating a client application
+
+Once you instantiate one of the services, you might want to connect to it using a Hot Rod or REST client.
+
+Both endpoints use encryption as well as authentication. TLS certificates for the server are generated automatically
+ by OpenShift. A client deployed inside OpenShift obtains them automatically (Kubernetes puts them in `/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt`).
+ However when a client is deployed outside of the cloud,
+ the easiest to obtain them is to use `oc` client. The last part is authentication - both user name and password
+ are specified as the Template parameters.
+
+The https://github.com/jboss-developer/jboss-jdg-quickstarts/tree/jdg-7.2.x/caching-service[Red Hat Cache Service quickstart] is
+ the easiest way to get everything up and running. It shows how to deploy a client application into the cloud (using
+ https://maven.fabric8.io/[Fabric8 Maven Plugin]) as well how to obtain a certificate from the `oc` client.
