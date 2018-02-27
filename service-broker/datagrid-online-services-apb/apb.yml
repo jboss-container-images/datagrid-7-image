@@ -21,7 +21,7 @@ plans:
          type: string
          title: Application Name
          required: true
-       - name: docker_image
+       - name: container_image
          default: docker-registry.engineering.redhat.com/jboss-dataservices/datagrid-online-services
          type: string
          title: Image
@@ -38,7 +38,7 @@ plans:
          type: string
          title: Application Name
          required: true
-       - name: docker_image
+       - name: container_image
          default: docker-registry.engineering.redhat.com/jboss-dataservices/datagrid-online-services
          type: string
          title: Image
