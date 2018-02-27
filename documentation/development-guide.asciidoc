@@ -15,7 +15,7 @@ This repository has the following structure:
       +-- capacity-tests - A set of capacity tests for calibrating memory settings
 ```
 
-The `image.yaml` uses a Python framework called http://concreate.readthedocs.io/en/develop/[Concreate] to build an image. The easiest way to start the build is to invoke `concreate image.yaml target` and invoke a standard Docker build from the `target` directory.
+The `image.yaml` uses a Python framework called http://concreate.readthedocs.io/en/develop/[Concreate] to build an image. The easiest way to start the build is to invoke `concreate image.yaml target` and invoke a standard container build from the `target` directory.
 
 The `Makefile` contains lots of small, useful scripts.
 
@@ -27,7 +27,7 @@ In order to run the functional test suite against a remote OpenShift instance, f
 
    oc login <openshift address> --token=<token>
 
-2. Set the environment variable with the adddress of the remote OpenShift docker registry
+2. Set the environment variable with the address of the remote OpenShift container registry
 
    export OPENSHIFT_ONLINE_REGISTRY=<registry address>
 
