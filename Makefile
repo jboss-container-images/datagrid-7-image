@@ -121,7 +121,7 @@ build-image:
 		$(CONCREATE_CMD) \
 		deactivate; \
 	)
-	sudo docker build --force-rm -t $(DEV_IMAGE_FULL_NAME) ./target-docker/image
+	concreate build --target target-docker --tag $(DEV_IMAGE_FULL_NAME)
 .PHONY: build-image
 
 _login_to_docker:
