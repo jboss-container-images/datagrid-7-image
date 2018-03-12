@@ -45,11 +45,11 @@ configure
 # jvm version).  This would allow for the defaults to be tuned for the version
 # of the jvm being used.
 unsupported_options() {
-    echo "(-XX:\+UseParallelGC|-XX:CICompilerCount=[^ ]*|-XX:GCTimeRatio=[^ ]*|-XX:MaxMetaspaceSize=[^ ]*|-XX:AdaptiveSizePolicyWeight=[^ ]*|-XX:MinHeapFreeRatio=[^ ]*|-XX:MaxHeapFreeRatio=[^ ]*)"
+    echo "(-XX:\+UseParallelOldGC|-XX:\+UnlockExperimentalVMOptions|-XX:\+UseCGroupMemoryLimitForHeap|-XX:\+UseParallelGC|-XX:CICompilerCount=[^ ]*|-XX:GCTimeRatio=[^ ]*|-XX:MaxMetaspaceSize=[^ ]*|-XX:AdaptiveSizePolicyWeight=[^ ]*|-XX:MinHeapFreeRatio=[^ ]*|-XX:MaxHeapFreeRatio=[^ ]*)"
 }
 
 additional_options() {
-    echo "-Dsun.zip.disableMemoryMapping=true -XX:+UseSerialGC -XX:MinHeapFreeRatio=5 -XX:MaxHeapFreeRatio=10 -XX:+UseSerialGC"
+    echo "-Dsun.zip.disableMemoryMapping=true -XX:+UseSerialGC -XX:MinHeapFreeRatio=5 -XX:MaxHeapFreeRatio=10"
 }
 
 # Merge default java options into the passed argument
