@@ -7,6 +7,7 @@ import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.configuration.SaslQop;
+import org.infinispan.commons.util.CloseableIteratorSet;
 import org.junit.Test;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Mode;
@@ -69,7 +70,8 @@ public class CachingServiceCapacityTest {
 
       @TearDown
       public void tearDown() throws Exception {
-         remoteCache.clear();
+         CloseableIteratorSet<String> entriesToBeDeleted = remoteCache.keySet();
+         entriesToBeDeleted.stream().forEach(k -> remoteCache.remove(k));
       }
 
       @Benchmark
