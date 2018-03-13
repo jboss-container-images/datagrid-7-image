@@ -81,4 +81,9 @@ public class SharedMemoryServiceTest {
    public void should_default_cache_be_protected_via_REST() throws IOException {
       restTester.testIfEndpointIsProtected(restService);
    }
+
+   @Test
+   public void should_create_cache_on_demand() {
+      hotRodTester.testOnDemandCacheCreation(hotRodService);
+   }
 }

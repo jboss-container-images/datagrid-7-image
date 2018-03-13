@@ -3,8 +3,7 @@ package org.infinispan.online.service.endpoint;
 import static junit.framework.TestCase.assertNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.infinispan.online.service.utils.TestObjectCreator.generateConstBytes;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.net.InetSocketAddress;
 import java.net.URL;
@@ -72,7 +71,7 @@ public class HotRodTester implements EndpointTester {
          .sorted()
          .collect(Collectors.toList());
       List<String> cacheNodeIPs = topology.getSegmentsPerServer().keySet().stream()
-         .map(addr -> ((InetSocketAddress)addr).getHostName())
+         .map(addr -> ((InetSocketAddress) addr).getHostName())
          .sorted()
          .collect(Collectors.toList());
 
@@ -182,7 +181,7 @@ public class HotRodTester implements EndpointTester {
       //given
       RemoteCacheManager cachingService = getRemoteCacheManager(hotRodService);
       RemoteCache<String, byte[]> byteArrayCache = cachingService.getCache();
-      byte[] randomValue = generateConstBytes(1024*1024);
+      byte[] randomValue = generateConstBytes(1024 * 1024);
       int currentCacheSize = -1;
       int lastCacheSize = -1;
       long counter = 0;
@@ -197,5 +196,23 @@ public class HotRodTester implements EndpointTester {
 
          currentCacheSize = byteArrayCache.size();
       } while (currentCacheSize > lastCacheSize);
+   }
+
+   public void testOnDemandCacheCreation(URL hotRodService) {
+      // given
+      RemoteCacheManager cachingService = getRemoteCacheManager(hotRodService);
+      RemoteCache<String, String> newCache = cachingService.getCache("newCache");
+
+      // cache should not exist
+      assertNull(newCache);
+
+      // when
+      String defaultTemplate = null;
+      newCache = cachingService.administration().createCache("newCache", defaultTemplate);
+
+      // then
+      assertNotNull(newCache);
+      newCache.put("key", "value");
+      assertEquals("value", newCache.get("key"));
    }
 }
