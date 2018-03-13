@@ -273,10 +273,7 @@ test-apb-deprovision: apb-push-to-local-broker
 run-docker: build-image
 	$(shell mkdir -p ./capacity-tests/target/heapdumps)
 	$(shell chmod 777 ./capacity-tests/target/heapdumps)
-	# For some tests it is a good idea to add --memory-swappiness=0 --memory-swap $(DOCKER_MEMORY)
-	# This prevents container from swapping but on the other hand, you won't be able
-	# to allocate additional memory needed for the heap dump!
-	docker run --privileged=true -m $(DOCKER_MEMORY) -e APPLICATION_USER=test -e APPLICATION_USER_PASSWORD=test -e KEYSTORE_FILE=/tmp/keystores/keystore_server.jks -e DEBUG=true -e KEYSTORE_PASSWORD=secret -v $(shell pwd)/capacity-tests/src/test/resources:/tmp/keystores -v $(shell pwd)/capacity-tests/target/heapdumps:/tmp/heapdumps $(ADDITIONAL_ARGUMENTS) $(DEV_IMAGE_FULL_NAME)
+	docker run --privileged=true -m $(DOCKER_MEMORY) --memory-swappiness=0 --memory-swap $(DOCKER_MEMORY) -e APPLICATION_USER=test -e APPLICATION_USER_PASSWORD=test -e KEYSTORE_FILE=/tmp/keystores/keystore_server.jks -e DEBUG=true -e KEYSTORE_PASSWORD=secret -v $(shell pwd)/capacity-tests/src/test/resources:/tmp/keystores -v $(shell pwd)/capacity-tests/target/heapdumps:/tmp/heapdumps $(ADDITIONAL_ARGUMENTS) $(DEV_IMAGE_FULL_NAME)
 .PHONY: run-docker
 
 test-capacity:
