@@ -46,7 +46,7 @@ The list of parameters is explained below:
 |Option                    |Required/Optional? |Description                                                                               |Default option
 |NAMESPACE                 |Required           |Namespace in which this service was created. Used for setting up clustering configuration.|myproject
 |APPLICATION_NAME          |Required           |Application name                                                                          |shared-memory-service-app
-|IMAGE                     |Required           |Image that will be used to bootstrap the service                                          |jboss-dataservices/datagrid-online-services
+|IMAGE                     |Required           |Image that will be used to bootstrap the service                                          |datagrid-7/datagrid-online-services
 |NUMBER_OF_INSTANCES       |Required           |Number of instances                                                                       |1
 |NUMBER_OF_OWNERS          |Optional           |Number of owners for a given piece of data                                                |2
 |TOTAL_CONTAINER_MEM       |Optional           |Total container size (both limits and requests)                                           |512

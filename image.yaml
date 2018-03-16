@@ -1,9 +1,11 @@
 schema_version: 1
-name: "jboss-dataservices/datagrid-online-services"
+name: "datagrid-7/datagrid-services"
 description: "Red Hat Data Grid Services"
 version: "1.0"
-from: "jboss-datagrid-7/datagrid72-openshift:dev"
+from: "jboss-datagrid-7/datagrid72-openshift:latest"
 labels:
+    - name: "com.redhat.component"
+      value: "datagrid-7-datagrid-services-container"
     - name: "io.k8s.description"
       value: "Provides a scalable in-memory caching solution for fast access to large volumes of data."
     - name: "io.k8s.display-name"
@@ -28,3 +30,7 @@ modules:
         - name: os-datagrid-online-services-configuration
         - name: os-datagrid-online-services-probes
         - name: os-datagrid-performance-logging
+osbs:
+    repository:
+        name: containers/redhat-datagrid
+        branch: jb-datagrid-services-openshift-rhel-7

@@ -1,9 +1,9 @@
-- name: datagrid-online-services-apb playbook to provision the application
+- name: datagrid-services-apb playbook to provision the application
   hosts: localhost
   gather_facts: false
   connection: local
   roles:
   - role: ansible.kubernetes-modules
     install_python_requirements: no
-  - role: provision-datagrid-online-services-apb
+  - role: provision-datagrid-services-apb
     playbook_debug: false
