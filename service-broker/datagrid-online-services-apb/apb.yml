@@ -1,10 +1,10 @@
-name: datagrid-online-services-apb
-image: jboss-dataservices/datagrid-online-services-apb
+name: datagrid-services-apb
+image: datagrid-7/datagrid-services-apb
 description: Red Hat Data Grid Online Services
 bindable: True
 async: optional
 metadata:
-   documentationUrl: https://github.com/jboss-container-images/jboss-dataservices-image/blob/dataservices-dev/Readme.asciidoc
+   documentationUrl: https://github.com/jboss-container-images/datagrid-7-image/blob/dataservices-dev/Readme.asciidoc
    longDescription: Red Hat JBoss Data Grid Online Services offer tailored experience for Caching (with optional persistence) for OpenShift users.
    displayName: Red Hat Data Grid Online Services
    console.openshift.io/iconClass: icon-infinispan
@@ -22,7 +22,7 @@ plans:
          title: Application Name
          required: true
        - name: container_image
-         default: docker-registry.engineering.redhat.com/jboss-dataservices/datagrid-online-services
+         default: docker-registry.engineering.redhat.com/datagrid-7/datagrid-online-services
          type: string
          title: Image
          required: true
@@ -39,7 +39,7 @@ plans:
          title: Application Name
          required: true
        - name: container_image
-         default: docker-registry.engineering.redhat.com/jboss-dataservices/datagrid-online-services
+         default: docker-registry.engineering.redhat.com/datagrid-7/datagrid-online-services
          type: string
          title: Image
          required: true

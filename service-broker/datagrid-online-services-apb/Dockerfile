@@ -2,8 +2,8 @@ FROM openshift3/apb-base
 MAINTAINER JDG community
 
 LABEL version="v1.0.0"
-LABEL name="jboss-dataservices/datagrid-online-services-apb"
-LABEL com.redhat.component="datagrid-online-services-apb"
+LABEL name="datagrid-7/datagrid-services-apb"
+LABEL com.redhat.component="datagrid-services-apb"
 
 LABEL "com.redhat.apb.version"="0.1.0"
 LABEL "com.redhat.apb.spec"=\

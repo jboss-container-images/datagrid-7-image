@@ -1,7 +1,7 @@
-DEV_IMAGE_ORG = jboss-dataservices
+DEV_IMAGE_ORG = datagrid-7
 DOCKER_REGISTRY_ENGINEERING =
 DOCKER_REGISTRY_REDHAT =
-DEV_IMAGE_NAME = datagrid-online-services-dev
+DEV_IMAGE_NAME = datagrid-services-dev
 ADDITIONAL_ARGUMENTS =
 
 CE_DOCKER = $(shell docker version | grep Version | head -n 1 | grep -e "-ce")
@@ -17,11 +17,11 @@ CONCREATE_CMD = concreate build --target target-docker --tag $(DEV_IMAGE_FULL_NA
 endif
 
 # In order to test this image we need to do a little trick. The APB image is pushed under the following name:
-# http://$REGISTRY:5000/myproject/datagrid-online-services-apb
-# Since the project name (myproject) and image name (datagrid-online-services-apb) match
+# http://$REGISTRY:5000/myproject/datagrid-services-apb
+# Since the project name (myproject) and image name (datagrid-services-apb) match
 # OpenShift "thinks" that this image has already been pulled from some registry.
 # But the reality is different - we pushed it...
-DEV_APB_IMAGE_NAME = datagrid-online-services-apb
+DEV_APB_IMAGE_NAME = datagrid-services-apb
 DEV_APB_IMAGE_FULL_NAME = $(DEV_IMAGE_ORG)/$(DEV_APB_IMAGE_NAME)
 
 DOCKER_MEMORY=512M
@@ -230,7 +230,7 @@ clean-ci: clean-docker stop-openshift #avoid cleaning Maven as we need results t
 
 apb-build:
 	(\
-		cd service-broker/datagrid-online-services-apb; \
+		cd service-broker/datagrid-services-apb; \
 		$(APB_COMMAND) prepare; \
 		sudo docker build --force-rm -t $(DEV_APB_IMAGE_FULL_NAME) ./; \
 	)
@@ -251,7 +251,7 @@ _wait_for_ansible_service_broker:
 
 apb-push-to-local-broker: _add_openshift_push_permissions _add_apb_roles apb-build _login_to_openshift _wait_for_ansible_service_broker
 	(\
-		cd service-broker/datagrid-online-services-apb; \
+		cd service-broker/datagrid-services-apb; \
 		$(APB_COMMAND) push -u $(_ANSIBLE_SERVICE_BROKER_USERNAME) -p $(_ANSIBLE_SERVICE_BROKER_PASSWORD); \
 		$(APB_COMMAND) list -u $(_ANSIBLE_SERVICE_BROKER_USERNAME) -p $(_ANSIBLE_SERVICE_BROKER_PASSWORD); \
 	)
