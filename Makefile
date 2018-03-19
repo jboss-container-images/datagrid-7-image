@@ -169,9 +169,12 @@ _relist-template-service-broker:
 	oc patch ClusterServiceBroker/template-service-broker -p '{"spec":{"relistRequests": '$$RELIST_TO_BE_SET'}}'
 .PHONY: _relist-template-service-broker
 
-install-templates-in-openshift-namespace: _relist-template-service-broker
+_install_templates_in_openshift_namespace:
 	oc create -f templates/caching-service.json -n openshift || true
 	oc create -f templates/shared-memory-service.json -n openshift || true
+.PHONY: _install_templates_in_openshift_namespace
+
+install-templates-in-openshift-namespace: _install_templates_in_openshift_namespace _relist-template-service-broker
 .PHONY: install-templates-in-openshift-namespace
 
 install-templates:
