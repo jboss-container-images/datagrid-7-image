@@ -41,7 +41,7 @@ The list of parameters is explained below:
 |======================
 |Option                    |Required/Optional? |Description                                                                               |Default option
 |APPLICATION_NAME          |Required           |Application name                                                                          |caching-service-app
-|IMAGE                     |Required           |Image that will be used to bootstrap the service                                          |datagrid-7/datagrid-online-services
+|IMAGE                     |Required           |Image that will be used to bootstrap the service                                          |datagrid-7-tech-preview/datagrid-services
 |NUMBER_OF_INSTANCES       |Required           |Number of instances                                                                       |1
 |TOTAL_CONTAINER_MEM       |Optional           |Total container size (both limits and requests)                                           |512
 |APPLICATION_USER          |Required           |Username used for authentication                                                          |<none>
