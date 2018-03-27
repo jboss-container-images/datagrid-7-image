@@ -143,6 +143,10 @@ push-image-to-local-openshift: _add_openshift_push_permissions _wait_for_local_d
 push-image-to-online-openshift: _login_to_docker push-image-common
 .PHONY: push-image-to-online-openshift
 
+pull-image:
+	docker pull $(DEV_IMAGE_FULL_NAME)
+.PHONY: pull-image
+
 push-image-common:
 	sudo docker tag $(DEV_IMAGE_FULL_NAME) $(_IMAGE)
 	sudo docker push $(_IMAGE)
@@ -226,7 +230,10 @@ test-ci: clean test-unit start-openshift-with-catalog login-to-openshift prepare
 
 #Before running this target, login to the remote OpenShift from console in whatever way recommended by the provider
 test-remote: clean-docker clean-maven prepare-openshift-project build-image push-image-to-online-openshift test-functional
-.PHONY: test-online
+.PHONY: test-remote
+
+test-remote-with-pull: clean-docker clean-maven prepare-openshift-project pull-image push-image-to-online-openshift test-functional
+.PHONY: test-remote-with-pull
 
 clean-ci: clean-docker stop-openshift #avoid cleaning Maven as we need results to be reported by the job
 .PHONY: clean-ci

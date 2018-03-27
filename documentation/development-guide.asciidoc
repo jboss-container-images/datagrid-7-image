@@ -55,5 +55,9 @@ In order to run the functional test suite against a remote OpenShift instance, f
 3. Invoke `make test-remote`.
 This procedure will create a new project in the remote OpenShift, build the image, push the image to the OpenShift internal registry, install the templates in the project and invoke functional tests.
 
+4. Optional: When the image is already available in a remote Docker registry, invoke the following command to pull the image instead of building it. It is also necessary to specify the remote Docker registry and possibly different image coordinates:
+
+   make DEV_IMAGE_ORG=datagrid-7-tech-preview DEV_IMAGE_NAME=datagrid-services DOCKER_REGISTRY_ENGINEERING=brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888 test-remote-with-pull
+
 == Useful links
 * Wildfly CLI guide: https://developer.jboss.org/wiki/CommandLineInterface
