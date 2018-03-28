@@ -8,7 +8,7 @@
       "annotations": {
          "description": "Red Hat Data Grid is a high performance, linearly scalable, key/value data grid solution. It provides many features to serve a variety of use cases.",
          "iconClass": "icon-datagrid",
-         "tags": "database,datagrid,jboss",
+         "tags": "database,datagrid",
          "openshift.io/display-name": "Red Hat Cache Service",
          "openshift.io/provider-display-name": "Red Hat, Inc.",
          "openshift.io/documentation-url": "https://github.com/jboss-container-images/datagrid-7-image/blob/datagrid-services-dev/documentation/cache-service.asciidoc",
