@@ -6,6 +6,8 @@ from: "jboss-datagrid-7/datagrid72-openshift:latest"
 labels:
     - name: "com.redhat.component"
       value: "datagrid-7-datagrid-services-container"
+    - name: "name"
+      value: "datagrid72-openshift"
     - name: "io.k8s.description"
       value: "Provides a scalable in-memory caching solution for fast access to large volumes of data."
     - name: "io.k8s.display-name"
