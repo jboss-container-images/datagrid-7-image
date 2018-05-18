@@ -275,7 +275,7 @@
                   "initContainers": [
                      {
                         "name": "pem-to-keystore",
-                        "image": "registry.access.redhat.com/redhat-sso-7/sso71-openshift:1.1-16",
+                        "image": "${IMAGE}",
                         "env": [
                            {
                               "name": "TLS_KEY_FILE",
