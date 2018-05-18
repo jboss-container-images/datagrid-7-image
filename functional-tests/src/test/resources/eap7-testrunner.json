@@ -69,7 +69,7 @@
       "initContainers": [
          {
             "name": "pem-to-truststore",
-            "image": "${DOCKER_REGISTRY_REDHAT}redhat-sso-7/sso71-openshift:1.1-16",
+            "image": "${image}",
             "env": [
                {
                   "name": "CA_BUNDLE",
