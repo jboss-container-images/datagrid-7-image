@@ -1,18 +1,19 @@
 DEV_IMAGE_ORG = datagrid-7
+DEV_IMAGE_NAME = datagrid-services-dev
+DEV_IMAGE_TAG = latest
 DOCKER_REGISTRY_ENGINEERING =
 DOCKER_REGISTRY_REDHAT =
-DEV_IMAGE_NAME = datagrid-services-dev
 ADDITIONAL_ARGUMENTS =
 
 CE_DOCKER = $(shell docker version | grep Version | head -n 1 | grep -e "-ce")
 ifneq ($(CE_DOCKER),)
 DOCKER_REGISTRY_ENGINEERING = docker-registry.engineering.redhat.com
 DOCKER_REGISTRY_REDHAT = registry.access.redhat.com/
-DEV_IMAGE_FULL_NAME = $(DOCKER_REGISTRY_ENGINEERING)/$(DEV_IMAGE_ORG)/$(DEV_IMAGE_NAME)
-IMAGE_FULL_NAME = $(DOCKER_REGISTRY_ENGINEERING)/$(DEV_IMAGE_ORG)/$(IMAGE_NAME)
+DEV_IMAGE_FULL_NAME = $(DOCKER_REGISTRY_ENGINEERING)/$(DEV_IMAGE_ORG)/$(DEV_IMAGE_NAME):$(DEV_IMAGE_TAG)
+IMAGE_FULL_NAME = $(DOCKER_REGISTRY_ENGINEERING)/$(DEV_IMAGE_ORG)/$(IMAGE_NAME):$(DEV_IMAGE_TAG)
 CONCREATE_CMD = concreate build --overrides=overrides.yaml --target target-docker --tag $(DEV_IMAGE_FULL_NAME)
 else
-DEV_IMAGE_FULL_NAME = $(DEV_IMAGE_ORG)/$(DEV_IMAGE_NAME)
+DEV_IMAGE_FULL_NAME = $(DEV_IMAGE_ORG)/$(DEV_IMAGE_NAME):$(DEV_IMAGE_TAG)
 CONCREATE_CMD = concreate build --target target-docker --tag $(DEV_IMAGE_FULL_NAME)
 endif
 
@@ -37,18 +38,18 @@ _TEST_PROJECT = myproject
 ifeq ($(OPENSHIFT_ONLINE_REGISTRY),)
 _OPENSHIFT_MASTER = https://127.0.0.1:8443
 _DOCKER_REGISTRY = "$(shell oc get svc/docker-registry -n default -o yaml | grep 'clusterIP:' | awk '{print $$2}'):5000"
-_IMAGE = $(_DOCKER_REGISTRY)/$(_TEST_PROJECT)/$(DEV_IMAGE_NAME)
+_IMAGE = $(_DOCKER_REGISTRY)/$(_TEST_PROJECT)/$(DEV_IMAGE_NAME):$(DEV_IMAGE_TAG)
 _APB_IMAGE = $(_DOCKER_REGISTRY):5000/$(_TEST_PROJECT)/$(DEV_APB_IMAGE_NAME)
 _OPENSHIFT_USERNAME = developer
 _OPENSHIFT_PASSWORD = developer
 _TESTRUNNER_PORT = 80
 else
 _DOCKER_REGISTRY = $(OPENSHIFT_ONLINE_REGISTRY)
-_IMAGE = $(_DOCKER_REGISTRY)/$(_TEST_PROJECT)/$(DEV_IMAGE_NAME)
+_IMAGE = $(_DOCKER_REGISTRY)/$(_TEST_PROJECT)/$(DEV_IMAGE_NAME):$(DEV_IMAGE_TAG)
 _TESTRUNNER_PORT = 80
 endif
 
-_DEV_IMAGE_STREAM = $(DEV_IMAGE_NAME):latest
+_DEV_IMAGE_STREAM = $(DEV_IMAGE_NAME):$(DEV_IMAGE_TAG)
 
 # This username and password is hardcoded (and base64 encoded) in the Ansible
 # Service Broker template
