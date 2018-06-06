@@ -4,6 +4,7 @@ DEV_IMAGE_TAG = latest
 DOCKER_REGISTRY_ENGINEERING =
 DOCKER_REGISTRY_REDHAT =
 ADDITIONAL_ARGUMENTS =
+INSTALL_OC =
 
 CE_DOCKER = $(shell docker version | grep Version | head -n 1 | grep -e "-ce")
 ifneq ($(CE_DOCKER),)
@@ -28,6 +29,7 @@ DEV_APB_IMAGE_FULL_NAME = $(DEV_IMAGE_ORG)/$(DEV_APB_IMAGE_NAME)
 DOCKER_MEMORY=512M
 
 MVN_COMMAND = mvn
+OC_COMMAND = ./oc
 
 # You may replace it with your custom command. See https://github.com/ansibleplaybookbundle/ansible-playbook-bundle#installing-the-apb-tool
 APB_COMMAND = docker run --rm --privileged -v `pwd`:/mnt -v ${HOME}/.kube:/.kube -v /var/run/docker.sock:/var/run/docker.sock -u `id -u` docker.io/ansibleplaybookbundle/apb
@@ -37,7 +39,7 @@ _TEST_PROJECT = myproject
 #Set variables for remote openshift when OPENSHIFT_ONLINE_REGISTRY is defined
 ifeq ($(OPENSHIFT_ONLINE_REGISTRY),)
 _OPENSHIFT_MASTER = https://127.0.0.1:8443
-_DOCKER_REGISTRY = "$(shell oc get svc/docker-registry -n default -o yaml | grep 'clusterIP:' | awk '{print $$2}'):5000"
+_DOCKER_REGISTRY = "$(shell $(OC_COMMAND) get svc/docker-registry -n default -o yaml | grep 'clusterIP:' | awk '{print $$2}'):5000"
 _IMAGE = $(_DOCKER_REGISTRY)/$(_TEST_PROJECT)/$(DEV_IMAGE_NAME):$(DEV_IMAGE_TAG)
 _APB_IMAGE = $(_DOCKER_REGISTRY):5000/$(_TEST_PROJECT)/$(DEV_APB_IMAGE_NAME)
 _OPENSHIFT_USERNAME = developer
@@ -56,42 +58,62 @@ _DEV_IMAGE_STREAM = $(DEV_IMAGE_NAME):$(DEV_IMAGE_TAG)
 _ANSIBLE_SERVICE_BROKER_USERNAME = admin
 _ANSIBLE_SERVICE_BROKER_PASSWORD = admin
 
-start-openshift-with-catalog:
+# This target provides a workaround for https://github.com/openshift/origin/issues/19663
+# If the OpenShift Team decided to bring the old behavior back (ImageStreams to work with StatefulSets
+# out of the box), just delete it.
+_install-oc:
+ifneq ("$(wildcard ./oc)","")
+	echo "---- The oc binary has been previously installed. Skipping. ----"
+else
+ifeq ($(INSTALL_OC),)
+	echo "---- Using OS installed oc client ----"
+	ln -f -s `which oc` oc
+else
+	echo "---- Downloading and installing oc client ----"
+	wget -N -L https://github.com/openshift/origin/releases/download/v3.7.2/openshift-origin-client-tools-v3.7.2-282e43f-linux-64bit.tar.gz
+	tar -zxf openshift-origin-client-tools-v3.7.2-282e43f-linux-64bit.tar.gz
+	mv openshift-origin-client-tools-v3.7.2-282e43f-linux-64bit/$(OC_COMMAND) ./oc
+	rm -rf openshift-origin-client-tools-v3.7.2-282e43f-linux-64bit
+endif
+endif
+.PHONY: _install-oc
+
+start-openshift-with-catalog: _install-oc
 	@echo "---- Starting OpenShift ----"
-	oc cluster up --service-catalog
+	$(OC_COMMAND) cluster up --service-catalog
 	@echo "---- Granting admin rights to Developer ----"
-	oc login -u system:admin
-	oc adm policy add-cluster-role-to-user cluster-admin $(_OPENSHIFT_USERNAME)
+	$(OC_COMMAND) login -u system:admin
+	$(OC_COMMAND) adm policy add-cluster-role-to-user cluster-admin $(_OPENSHIFT_USERNAME)
 
 	@echo "---- Allowing containers to run specific users ----"
 	# Some of the JDK commands (jcmd, jps etc.) require the same user as the one running java process.
 	# The command below enabled that. The process inside the container will be ran using jboss user.
-	# The same users will be used by default for `oc rsh` command.
-	oc adm policy add-scc-to-group anyuid system:authenticated
+	# The same users will be used by default for `$(OC_COMMAND) rsh` command.
+	$(OC_COMMAND) adm policy add-scc-to-group anyuid system:authenticated
 .PHONY: start-openshift-with-catalog
 
 prepare-openshift-project: clean-openshift
 	@echo "---- Create main project for test purposes"
-	oc new-project $(_TEST_PROJECT)
+	$(OC_COMMAND) new-project $(_TEST_PROJECT)
 
 	@echo "---- Switching to test project ----"
-	oc project $(_TEST_PROJECT)
+	$(OC_COMMAND) project $(_TEST_PROJECT)
 .PHONY: prepare-openshift-project
 
-clean-openshift:
+clean-openshift: _install-oc
 	@echo "---- Deleting projects ----"
-	oc delete project $(_TEST_PROJECT) || true
+	$(OC_COMMAND) delete project $(_TEST_PROJECT) || true
 	( \
-		while oc get projects | grep -e $(_TEST_PROJECT) > /dev/null; do \
+		while $(OC_COMMAND) get projects | grep -e $(_TEST_PROJECT) > /dev/null; do \
 			echo "Waiting for deleted projects..."; \
 			sleep 5; \
 		done; \
 	)
 .PHONY: clean-openshift
 
-login-to-openshift:
+login-to-openshift: _install-oc
 	@echo "---- Login ----"
-	oc login $(_OPENSHIFT_MASTER) -u $(_OPENSHIFT_USERNAME) -p $(_OPENSHIFT_PASSWORD)
+	$(OC_COMMAND) login $(_OPENSHIFT_MASTER) -u $(_OPENSHIFT_USERNAME) -p $(_OPENSHIFT_PASSWORD)
 .PHONY: login-to-openshift
 
 start-openshift-with-catalog-and-ansible-service-broker: start-openshift-with-catalog login-to-openshift prepare-openshift-project install-ansible-service-broker
@@ -99,19 +121,19 @@ start-openshift-with-catalog-and-ansible-service-broker: start-openshift-with-ca
 
 install-ansible-service-broker:
 	@echo "---- Installing Ansible Service Broker ----"
-	oc new-project ansible-service-broker
+	$(OC_COMMAND) new-project ansible-service-broker
 	( \
 		curl -s https://raw.githubusercontent.com/openshift/ansible-service-broker/master/templates/deploy-ansible-service-broker.template.yaml \
-        | oc process \
+        | $(OC_COMMAND) process \
         -n ansible-service-broker \
         -p BROKER_KIND="Broker" \
         -p BROKER_AUTH="{\"basicAuthSecret\":{\"namespace\":\"ansible-service-broker\",\"name\":\"asb-auth-secret\"}}" \
-        -p ENABLE_BASIC_AUTH="true" -f - | oc create -f - \
+        -p ENABLE_BASIC_AUTH="true" -f - | $(OC_COMMAND) create -f - \
 	)
 .PHONY: install-ansible-service-broker
 
-stop-openshift:
-	oc cluster down
+stop-openshift: _install-oc
+	$(OC_COMMAND) cluster down
 .PHONY: stop-openshift
 
 build-image:
@@ -120,12 +142,12 @@ build-image:
 .PHONY: build-image
 
 _login_to_docker:
-	sudo docker login -u $(shell oc whoami) -p $(shell oc whoami -t) $(_DOCKER_REGISTRY)
+	sudo docker login -u $(shell $(OC_COMMAND) whoami) -p $(shell $(OC_COMMAND) whoami -t) $(_DOCKER_REGISTRY)
 .PHONY: _login_to_docker
 
 _wait_for_local_docker_registry:
 	( \
-		until oc get pod -n default | grep docker-registry | grep "1/1" > /dev/null; do \
+		until $(OC_COMMAND) get pod -n default | grep docker-registry | grep "1/1" > /dev/null; do \
 			sleep 10; \
 			echo "Waiting for Docker Registry..."; \
 		done; \
@@ -133,9 +155,9 @@ _wait_for_local_docker_registry:
 .PHONY: _wait_for_local_docker_registry
 
 _add_openshift_push_permissions:
-	oc adm policy add-role-to-user system:registry $(_OPENSHIFT_USERNAME) || true
-	oc adm policy add-role-to-user admin $(_OPENSHIFT_USERNAME) -n ${_TEST_PROJECT} || true
-	oc adm policy add-role-to-user system:image-builder $(_OPENSHIFT_USERNAME) || true
+	$(OC_COMMAND) adm policy add-role-to-user system:registry $(_OPENSHIFT_USERNAME) || true
+	$(OC_COMMAND) adm policy add-role-to-user admin $(_OPENSHIFT_USERNAME) -n ${_TEST_PROJECT} || true
+	$(OC_COMMAND) adm policy add-role-to-user system:image-builder $(_OPENSHIFT_USERNAME) || true
 .PHONY: _add_openshift_push_permissions
 
 push-image-to-local-openshift: _add_openshift_push_permissions _wait_for_local_docker_registry _login_to_docker push-image-common
@@ -151,16 +173,16 @@ pull-image:
 push-image-common:
 	sudo docker tag $(DEV_IMAGE_FULL_NAME) $(_IMAGE)
 	sudo docker push $(_IMAGE)
-	oc set image-lookup $(DEV_IMAGE_NAME)
+	$(OC_COMMAND) set image-lookup $(DEV_IMAGE_NAME)
 .PHONY: push-image-common
 
 test-functional: deploy-testrunner-route
-	$(MVN_COMMAND) -Dimage=$(_DEV_IMAGE_STREAM) -Dkubernetes.auth.token=$(shell oc whoami -t) -DDOCKER_REGISTRY_REDHAT=$(DOCKER_REGISTRY_REDHAT) -DTESTRUNNER_HOST=$(shell oc get routes | grep testrunner | awk '{print $$2}') -DTESTRUNNER_PORT=${_TESTRUNNER_PORT} clean test -f functional-tests/pom.xml $(ADDITIONAL_ARGUMENTS)
+	$(MVN_COMMAND) -Dimage=$(_DEV_IMAGE_STREAM) -Dkubernetes.auth.token=$(shell $(OC_COMMAND) whoami -t) -DDOCKER_REGISTRY_REDHAT=$(DOCKER_REGISTRY_REDHAT) -DTESTRUNNER_HOST=$(shell $(OC_COMMAND) get routes | grep testrunner | awk '{print $$2}') -DTESTRUNNER_PORT=${_TESTRUNNER_PORT} clean test -f functional-tests/pom.xml $(ADDITIONAL_ARGUMENTS)
 .PHONY: test-functional
 
 deploy-testrunner-route:
-	oc create -f ./functional-tests/src/test/resources/eap7-testrunner-service.json
-	oc create -f ./functional-tests/src/test/resources/eap7-testrunner-route.json
+	$(OC_COMMAND) create -f ./functional-tests/src/test/resources/eap7-testrunner-service.json
+	$(OC_COMMAND) create -f ./functional-tests/src/test/resources/eap7-testrunner-route.json
 .PHONY: deploy-testrunner-route
 
 test-unit:
@@ -170,46 +192,46 @@ test-unit:
 _relist-template-service-broker:
 	# This one is very hacky - the idea is to increase the relist request counter by 1. This way we ask the Template
 	# Service Broker to refresh all templates. The rest of the complication is due to how Makefile parses file.
-	RELIST_TO_BE_SET=`expr $(shell oc get ClusterServiceBroker/template-service-broker --template={{.spec.relistRequests}}) + 1` && \
-	oc patch ClusterServiceBroker/template-service-broker -p '{"spec":{"relistRequests": '$$RELIST_TO_BE_SET'}}'
+	RELIST_TO_BE_SET=`expr $(shell $(OC_COMMAND) get ClusterServiceBroker/template-service-broker --template={{.spec.relistRequests}}) + 1` && \
+	$(OC_COMMAND) patch ClusterServiceBroker/template-service-broker -p '{"spec":{"relistRequests": '$$RELIST_TO_BE_SET'}}'
 .PHONY: _relist-template-service-broker
 
 _install_templates_in_openshift_namespace:
-	oc create -f templates/caching-service.json -n openshift || true
-	oc create -f templates/shared-memory-service.json -n openshift || true
+	$(OC_COMMAND) create -f templates/caching-service.json -n openshift || true
+	$(OC_COMMAND) create -f templates/shared-memory-service.json -n openshift || true
 .PHONY: _install_templates_in_openshift_namespace
 
 install-templates-in-openshift-namespace: _install_templates_in_openshift_namespace _relist-template-service-broker
 .PHONY: install-templates-in-openshift-namespace
 
 install-templates:
-	oc create -f templates/caching-service.json || true
-	oc create -f templates/shared-memory-service.json || true
+	$(OC_COMMAND) create -f templates/caching-service.json || true
+	$(OC_COMMAND) create -f templates/shared-memory-service.json || true
 .PHONY: install-templates
 
 clear-templates:
-	oc delete all,secrets,sa,templates,configmaps,daemonsets,clusterroles,rolebindings,serviceaccounts --selector=template=caching-service || true
-	oc delete all,secrets,sa,templates,configmaps,daemonsets,clusterroles,rolebindings,serviceaccounts --selector=template=shared-memory-service || true
-	oc delete template caching-service || true
-	oc delete template shared-memory-service || true
+	$(OC_COMMAND) delete all,secrets,sa,templates,configmaps,daemonsets,clusterroles,rolebindings,serviceaccounts --selector=template=caching-service || true
+	$(OC_COMMAND) delete all,secrets,sa,templates,configmaps,daemonsets,clusterroles,rolebindings,serviceaccounts --selector=template=shared-memory-service || true
+	$(OC_COMMAND) delete template caching-service || true
+	$(OC_COMMAND) delete template shared-memory-service || true
 .PHONY: clear-templates
 
 test-caching-service-manually:
-	oc set image-lookup $(DEV_IMAGE_NAME)
-	oc process caching-service -p APPLICATION_USER=test \
-	-p APPLICATION_USER_PASSWORD=test -p IMAGE=$(_DEV_IMAGE_STREAM) | oc create -f -
-	oc expose svc/caching-service-app-http || true
-	oc expose svc/caching-service-app-hotrod || true
-	oc get routes
+	$(OC_COMMAND) set image-lookup $(DEV_IMAGE_NAME)
+	$(OC_COMMAND) process caching-service -p APPLICATION_USER=test \
+	-p APPLICATION_USER_PASSWORD=test -p IMAGE=$(_DEV_IMAGE_STREAM) | $(OC_COMMAND) create -f -
+	$(OC_COMMAND) expose svc/caching-service-app-http || true
+	$(OC_COMMAND) expose svc/caching-service-app-hotrod || true
+	$(OC_COMMAND) get routes
 .PHONY: test-caching-service-manually
 
 test-shared-memory-service-manually:
-	oc set image-lookup $(DEV_IMAGE_NAME)
-	oc process shared-memory-service -p APPLICATION_USER=test \
-	-p APPLICATION_USER_PASSWORD=test -p IMAGE=$(_DEV_IMAGE_STREAM) | oc create -f -
-	oc expose svc/shared-memory-service-app-http || true
-	oc expose svc/shared-memory-service-app-hotrod || true
-	oc get routes
+	$(OC_COMMAND) set image-lookup $(DEV_IMAGE_NAME)
+	$(OC_COMMAND) process shared-memory-service -p APPLICATION_USER=test \
+	-p APPLICATION_USER_PASSWORD=test -p IMAGE=$(_DEV_IMAGE_STREAM) | $(OC_COMMAND) create -f -
+	$(OC_COMMAND) expose svc/shared-memory-service-app-http || true
+	$(OC_COMMAND) expose svc/shared-memory-service-app-hotrod || true
+	$(OC_COMMAND) get routes
 .PHONY: test-shared-memory-service-manually
 
 clean-maven:
@@ -248,12 +270,12 @@ apb-build:
 .PHONY: apb-build
 
 _add_apb_roles:
-	oc policy add-role-to-user cluster-admin system:serviceaccount:myproject:default -n myproject || true
+	$(OC_COMMAND) policy add-role-to-user cluster-admin system:serviceaccount:myproject:default -n myproject || true
 .PHONY: _add_apb_roles
 
 _wait_for_ansible_service_broker:
 	( \
-		until oc get pods -n ansible-service-broker | grep asb | grep "2/2" > /dev/null; do \
+		until $(OC_COMMAND) get pods -n ansible-service-broker | grep asb | grep "2/2" > /dev/null; do \
 			sleep 20; \
 			echo "Waiting for Ansible Service Broker..."; \
 		done; \
@@ -273,12 +295,12 @@ apb-push-to-local-broker: _add_openshift_push_permissions _add_apb_roles apb-bui
 test-apb-provision: apb-push-to-local-broker
 	# This needs to be called twice :(
 	# https://github.com/ansibleplaybookbundle/ansible-playbook-bundle/issues/118
-	oc run apb-test --rm=true --image=$(DEV_APB_IMAGE_FULL_NAME) --restart=Never --attach=true -- provision -e namespace=$(_TEST_PROJECT) || true
-	oc run apb-test --rm=true --image=$(DEV_APB_IMAGE_FULL_NAME) --restart=Never --attach=true -- provision -e namespace=$(_TEST_PROJECT)
+	$(OC_COMMAND) run apb-test --rm=true --image=$(DEV_APB_IMAGE_FULL_NAME) --restart=Never --attach=true -- provision -e namespace=$(_TEST_PROJECT) || true
+	$(OC_COMMAND) run apb-test --rm=true --image=$(DEV_APB_IMAGE_FULL_NAME) --restart=Never --attach=true -- provision -e namespace=$(_TEST_PROJECT)
 .PHONY: test-apb-provision
 
 test-apb-deprovision: apb-push-to-local-broker
-	oc run apb-test --rm=true --image=$(DEV_APB_IMAGE_FULL_NAME) --restart=Never --attach=true -- deprovision -e namespace=$(_TEST_PROJECT)
+	$(OC_COMMAND) run apb-test --rm=true --image=$(DEV_APB_IMAGE_FULL_NAME) --restart=Never --attach=true -- deprovision -e namespace=$(_TEST_PROJECT)
 .PHONY: test-apb-deprovision
 
 run-docker: build-image
