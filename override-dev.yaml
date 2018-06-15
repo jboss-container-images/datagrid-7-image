@@ -1,4 +1,4 @@
 osbs:
     repository:
         name: containers/redhat-datagrid
-        branch: jb-datagrid-openshift-services-dev-rhel-7
+        branch: jb-datagrid-services-openshift-dev-rhel-7
