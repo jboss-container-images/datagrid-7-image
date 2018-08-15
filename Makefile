@@ -11,10 +11,10 @@ DOCKER_REGISTRY_ENGINEERING = docker-registry.engineering.redhat.com
 DOCKER_REGISTRY_REDHAT = registry.access.redhat.com/
 DEV_IMAGE_FULL_NAME = $(DOCKER_REGISTRY_ENGINEERING)/$(DEV_IMAGE_ORG)/$(DEV_IMAGE_NAME):$(DEV_IMAGE_TAG)
 IMAGE_FULL_NAME = $(DOCKER_REGISTRY_ENGINEERING)/$(DEV_IMAGE_ORG)/$(IMAGE_NAME):$(DEV_IMAGE_TAG)
-CONCREATE_CMD = concreate build --overrides=overrides.yaml --target target-docker --tag $(DEV_IMAGE_FULL_NAME)
+CEKIT_CMD = cekit build --overrides=overrides.yaml --target target-docker --tag $(DEV_IMAGE_FULL_NAME)
 else
 DEV_IMAGE_FULL_NAME = $(DEV_IMAGE_ORG)/$(DEV_IMAGE_NAME):$(DEV_IMAGE_TAG)
-CONCREATE_CMD = concreate build --target target-docker --tag $(DEV_IMAGE_FULL_NAME)
+CEKIT_CMD = cekit build --target target-docker --tag $(DEV_IMAGE_FULL_NAME)
 endif
 
 # In order to test this image we need to do a little trick. The APB image is pushed under the following name:
@@ -115,8 +115,8 @@ stop-openshift:
 .PHONY: stop-openshift
 
 build-image:
-	$(CONCREATE_CMD)
-	concreate build --target target-docker --tag $(DEV_IMAGE_FULL_NAME)
+	$(CEKIT_CMD)
+	cekit build --target target-docker --tag $(DEV_IMAGE_FULL_NAME)
 .PHONY: build-image
 
 _login_to_docker:
