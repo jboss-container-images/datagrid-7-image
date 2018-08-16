@@ -49,7 +49,7 @@ _IMAGE = $(_DOCKER_REGISTRY)/$(_TEST_PROJECT)/$(DEV_IMAGE_NAME):$(DEV_IMAGE_TAG)
 _TESTRUNNER_PORT = 80
 endif
 
-_DEV_IMAGE_STREAM = $(DEV_IMAGE_NAME):$(DEV_IMAGE_TAG)
+_DEV_IMAGE_STREAM = $(_DOCKER_REGISTRY)/$(_TEST_PROJECT)/$(DEV_IMAGE_NAME):$(DEV_IMAGE_TAG)
 
 # This username and password is hardcoded (and base64 encoded) in the Ansible
 # Service Broker template
@@ -58,7 +58,8 @@ _ANSIBLE_SERVICE_BROKER_PASSWORD = admin
 
 start-openshift-with-catalog:
 	@echo "---- Starting OpenShift ----"
-	oc cluster up --service-catalog
+	oc cluster up
+	oc cluster add service-catalog
 	@echo "---- Granting admin rights to Developer ----"
 	oc login -u system:admin
 	oc adm policy add-cluster-role-to-user cluster-admin $(_OPENSHIFT_USERNAME)
@@ -112,6 +113,9 @@ install-ansible-service-broker:
 
 stop-openshift:
 	oc cluster down
+	# Hack to remove leftover mounts https://github.com/openshift/origin/issues/19141
+	for i in $(shell mount | grep openshift | awk '{ print $$3}'); do sudo umount "$$i"; done
+	sudo rm -rf ./openshift.local.clusterup
 .PHONY: stop-openshift
 
 build-image:
@@ -134,7 +138,7 @@ _wait_for_local_docker_registry:
 
 _add_openshift_push_permissions:
 	oc adm policy add-role-to-user system:registry $(_OPENSHIFT_USERNAME) || true
-	oc adm policy add-role-to-user admin $(_OPENSHIFT_USERNAME) -n ${_TEST_PROJECT} || true
+	oc adm policy add-role-to-user admin $(_OPENSHIFT_USERNAME) -n $(_TEST_PROJECT) || true
 	oc adm policy add-role-to-user system:image-builder $(_OPENSHIFT_USERNAME) || true
 .PHONY: _add_openshift_push_permissions
 
